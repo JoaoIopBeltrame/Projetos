@@ -1,3 +1,5 @@
+# add uma opcao que ja da pra selecionar de x ate y ou l a c pra um numero pra evitar as demoras
+
 def definirMatrizA():
     while True:
         try:
@@ -36,7 +38,7 @@ def matrizMult(mA, mB):
         ]
     print("Tem que ter c de a igual a l de b") # fazer função la das anumações e um que mostra as regras 
 
-def main():
+def main(): # colocar as opções la em match case e uma tabela com as operações
     mA = definirMatrizA()  
     print(f"=====A=====")
     print(*mA, sep="\n")
