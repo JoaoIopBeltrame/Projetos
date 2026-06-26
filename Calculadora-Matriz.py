@@ -80,7 +80,8 @@ def calcularChio(mC): # transformar em list comprehension
             
             #colocar a expressao la do numpy
         
-def main(): # colocar as opções la em match case e uma tabela com as operações
+def main(): # colocar as opções la em match case e uma tabela com as operações add tambem que as matrizes de soma menos e mult e talves inversa fiquem uma do lado da outra com aqules desenos la e coisa parecida
+    
     mA = definirMatrizA()  
     print(f"=====A=====")
     print(*mA, sep="\n")
