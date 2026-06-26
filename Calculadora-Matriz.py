@@ -38,6 +38,32 @@ def matrizMult(mA, mB):
         ]
     print("Tem que ter c de a igual a l de b") # fazer função la das anumações e um que mostra as regras 
 
+
+
+def determinaneMatriz(): # todas as diagonais tem que se deitadas 
+    while True:
+        try:
+            l = int(input("Dgite quantas linhas a matriz deve ter\n> "))
+            j = int(input("Dgite quantas colunas a matriz deve ter\n> "))
+            
+            if not (l == j):
+                print("Para calcular os deerminantes a matriz deve ter um mesmo numero de linha e de coluna")
+                continue
+            
+            mD = [[10 for co in range(j)] for lin in range(l)]
+            return mD
+        except ValueError:
+            print("Digite um numero inteiro")
+
+# fomula da rega de chio a{i,j} = a{i,j} - (a{i,1} x a{1,j})
+def calcularDet(mD):
+    if any(matrizR[i][i] < mD for i in range(1, 3)):
+        print("Fazer a regra de Chió primeiro")
+
+        for numL in range(mD):
+            for numC in range(len(mD[0])):
+                mD[numL + 1][numC + 1]
+     
 def main(): # colocar as opções la em match case e uma tabela com as operações
     mA = definirMatrizA()  
     print(f"=====A=====")
@@ -45,9 +71,9 @@ def main(): # colocar as opções la em match case e uma tabela com as operaçõ
     mB = definirMatrizB()
     print(f"=====B=====")
     print(*mB, sep="\n")
-    # res = matrizMenosMais(mA, mB, lambda mA, mB: mA + mB)
-    # print(f"=====C=====")
-    # print(*res, sep="\n")
+    res = matrizMenosMais(mA, mB, lambda mA, mB: mA + mB)
+    print(f"=====C=====")
+    print(*res, sep="\n")
     print(f"=====D=====")
     res3 = matrizMult(mA, mB)
     print(*res3, sep="\n")
