@@ -1,4 +1,11 @@
 # add uma opcao que ja da pra selecionar de x ate y ou l a c pra um numero pra evitar as demoras
+# mP = [
+#     [1, 5, 2, 3, 8],
+#     [6, 7, 1, 4, 3],
+#     [2, 5, 9, 3, 1],
+#     [4, 1, 3, 2, 6],
+#     [3, 8, 2, 7, 5]
+# ]
 
 def definirMatrizA():
     while True:
@@ -50,20 +57,29 @@ def determinaneMatriz(): # todas as diagonais tem que se deitadas
                 print("Para calcular os deerminantes a matriz deve ter um mesmo numero de linha e de coluna")
                 continue
             
-            mD = [[10 for co in range(j)] for lin in range(l)]
+            mD = [[9 for co in range(j)] for lin in range(l)]
             return mD
         except ValueError:
             print("Digite um numero inteiro")
 
-# fomula da rega de chio a{i,j} = a{i,j} - (a{i,1} x a{1,j})
-def calcularDet(mD):
-    if any(matrizR[i][i] < mD for i in range(1, 3)):
-        print("Fazer a regra de Chió primeiro")
-
-        for numL in range(len(mD) - 1):
-            for numC in range(len(mD[1])):
-                mD[numL + 1][numC + 1]
-     
+# a'{i,j} = a{i,j} - (a{i,1} × a{1,j}) / a{1,1}    
+def calcularChio(mC): # transformar em list comprehension
+    while len(mC) > 3:
+        try:
+            matrizRE = []
+            for li in range(1, len(mC)):
+                linhaRE = []
+                for co in range(1, len(mC[0])):
+                    valor = round(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0])
+                    linhaRE.append(valor)
+                matrizRE.append(linhaRE)
+            mC = matrizRE
+            return mC
+        except ZeroDivisionError:
+            print("A sua matriz dara erro EXPLICAÇÃO CHATA")   #pensar no que escrever ainda
+            
+            #colocar a expressao la do numpy
+        
 def main(): # colocar as opções la em match case e uma tabela com as operações
     mA = definirMatrizA()  
     print(f"=====A=====")
@@ -77,6 +93,9 @@ def main(): # colocar as opções la em match case e uma tabela com as operaçõ
     print(f"=====D=====")
     res3 = matrizMult(mA, mB)
     print(*res3, sep="\n")
+    det_MA = determinaneMatriz()
+    chio = calcularChio(det_MA)
+    print(*chio, sep="\n")
 
 
 
