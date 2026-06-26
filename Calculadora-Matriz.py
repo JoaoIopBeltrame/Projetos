@@ -60,8 +60,8 @@ def calcularDet(mD):
     if any(matrizR[i][i] < mD for i in range(1, 3)):
         print("Fazer a regra de Chió primeiro")
 
-        for numL in range(mD):
-            for numC in range(len(mD[0])):
+        for numL in range(len(mD) - 1):
+            for numC in range(len(mD[1])):
                 mD[numL + 1][numC + 1]
      
 def main(): # colocar as opções la em match case e uma tabela com as operações
