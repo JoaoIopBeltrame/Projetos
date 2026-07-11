@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <ctype.h>
 
+// add a parte la da divisao de restos e o proprio num por ele mesmo n = n/2 dentro de um while(num>=0)
+// add os & | e ^ ~ ! >> << bitwise
 void titulo(void){
     printf("+---------------------------------+\n");
 
@@ -9,7 +11,6 @@ void titulo(void){
 
     printf("+---------------------------------+\n");
 }
-
 void tituloOperadores(void){
     printf("+---------------------------------+\n");
     printf("|      Operadores Disponiveis      |\n");
@@ -23,13 +24,12 @@ void tituloOperadores(void){
     printf("+---------------------------------+\n");
 }
 
-int verificaInput(int *num_s1){
-
+int verificaInput(char *num_s){
     int i;
     int valido = 1; // if (valido) ele e true se der certo e true == 1
     // colocar um if para pular essa parte caso esteja alocada na memoria
-    for(int i; num_s1[i] != '\0'; i++){
-        if(!isalnum(num_s1[i])){
+    for(int i = 0; num_s[i] != '\0'; i++){
+        if(!isalnum(num_s[i])){
             
             valido = 0;
             break;
@@ -37,7 +37,7 @@ int verificaInput(int *num_s1){
     }
     if (valido){
         
-        printf("O numero é valido: %s\n", num_s1);
+        printf("O numero é valido: %s\n", num_s);
         return 1;
     }else{
 
@@ -46,17 +46,18 @@ int verificaInput(int *num_s1){
     }
 }
 
-int pedir_numero1(char num_s1[], int tam, int *num1){
+int pedir_numero(char num_s[], int tam, int *num, int qualRep){
 
     while (1){
          
-        printf("Digite um numero\n");
-        if (fgets(num_s1, tam, stdin) != NULL){
+        printf("Digite %dº numero\n", qualRep);
+        if (fgets(num_s, tam, stdin) != NULL){
             
-            num_s1[strcspn(num_s1, "\n")] = '\0';
-            if (verificaInput(num_s1)){
+            num_s[strcspn(num_s, "\n")] = '\0';
+            if (verificaInput(num_s)){
 
-                sscanf (num_s1, "%d", num1);
+                sscanf (num_s, "%d", num);
+                return 1;
             }
         }
         else{
@@ -67,7 +68,6 @@ int pedir_numero1(char num_s1[], int tam, int *num1){
     }   
 }    
 
-
 int main(void){
     
     int num1;
@@ -76,13 +76,8 @@ int main(void){
     char num_s1[10];
     char num_s2[10];
 
-    
-    while (1){
-
-
-    
-        
-    }   
+    pedir_numero(num_s1, 10, &num1, 1);
+    pedir_numero(num_s2, 10, &num2, 2);
     
     return 0;
 }
