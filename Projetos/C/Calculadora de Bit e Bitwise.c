@@ -10,44 +10,6 @@ void titulo(void){
     printf("+---------------------------------+\n");
 }
 
-int verificaInput(int *num_s1){
-
-    int i;
-    // colocar um if para pular essa parte caso esteja alocada na memoria
-    for(*num_s1; sizeof(*num_s1), i++){
-
-        if(!isalnum(i)){
-
-            printf("Digite numeros nao letras ou simbolos\n");
-            return 0;
-        }
-        else{
-
-            printf("Numero valido: %p\n", num_s1);
-            
-            return num_s1;
-        }
-    }
-
-}
-
-
-int pedir_numero(int *num1, int *num2){
-
-
-    
-    if (fgets(num_s1, sizeof(num_s1), stdin) != NULL && !isalnum) {
-
-        num_s1[strcspn(num_s1, "\n")] = '\0';
-
-    } 
-
-
-
-
-
-}    
-
 void tituloOperadores(void){
     printf("+---------------------------------+\n");
     printf("|      Operadores Disponiveis      |\n");
@@ -61,6 +23,49 @@ void tituloOperadores(void){
     printf("+---------------------------------+\n");
 }
 
+int verificaInput(int *num_s1){
+
+    int i;
+    int valido = 1; // if (valido) ele e true se der certo e true == 1
+    // colocar um if para pular essa parte caso esteja alocada na memoria
+    for(int i; num_s1[i] != '\0'; i++){
+        if(!isalnum(num_s1[i])){
+            
+            valido = 0;
+            break;
+        }     
+    }
+    if (valido){
+        
+        printf("O numero é valido: %s\n", num_s1);
+        return 1;
+    }else{
+
+        printf("Voce deve digitar numeros\n");
+        return 0;
+    }
+}
+
+int pedir_numero1(char num_s1[], int tam, int *num1){
+
+    while (1){
+         
+        printf("Digite um numero\n");
+        if (fgets(num_s1, tam, stdin) != NULL){
+            
+            num_s1[strcspn(num_s1, "\n")] = '\0';
+            if (verificaInput(num_s1)){
+
+                sscanf (num_s1, "%d", num1);
+            }
+        }
+        else{
+            
+            printf("Digite algo\n");
+            return 0;
+        }
+    }   
+}    
 
 
 int main(void){
@@ -71,12 +76,12 @@ int main(void){
     char num_s1[10];
     char num_s2[10];
 
-    int loop = 0;
-    while (loop == 0){
+    
+    while (1){
 
 
     
-        loop += 1;
+        
     }   
     
     return 0;
