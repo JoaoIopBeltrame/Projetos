@@ -6,13 +6,14 @@
 
 #colocar a expressao la do numpy
 
-def limparMatriz(matriz):
-    print('\n     ' + '  '.join(f'{c:^3}' for c in range(len(matriz[0]))))
+def limparMatriz(matriz, titulo=None):
+    if titulo:
+        print(f"\n{titulo}")
+    print('     ' + '  '.join(f'{c:^3}' for c in range(len(matriz[0]))))
     print('  ╔' + '═' * (len(matriz[0]) * 4))
     for nume, linha in enumerate(matriz):
         celulas = ''.join(f'{v:^3}' for v in linha)
-        print(f'{nume} ║  ' + celulas)
-
+        print(f'{nume} ║  ' + celulas)  
 
 def malhorarTeste(matriz):
     preenhe_rapido = ("Quer um preencher rapido\n> ").strip().capitalize()
@@ -69,38 +70,38 @@ def tabela():
 #add mais coisa
 
 # criar as matrizes para soma, subtração, multiplicação e possivel divisao(não existe eu acho)
-def matrizA():
+def matriz(nome="Matriz", quadrada=False, comparaMatriz = None):
+
     while True:
         try:
-            l = int(input("Dgite quantas linhas a matriz deve ter\n> "))
-            j = int(input("Dgite quantas colunas a matriz deve ter\n> "))
+            l = int(input(f"Digite quantas linhas a {nome} deve ter\n> "))
+            j = int(input(f"Digite quantas colunas a {nome} deve ter\n> "))
 
-            mA = [[0 for co in range(j)] for lin in range(l)]
+            if comparaMatriz is not None and (l != len(comparaMatriz) or j != len(comparaMatriz[0])):
+                print("As matrizes devem ter o mesmo numero de linhas e colunas para fazer operações de soma e subtração")
+                continue  
+             
 
-    
-            for lin in range(l):
-                for col in range(j):
-                    mA[lin][col] = int(input(f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> "))
-        
-            return mA
+            if quadrada and l != j:
+                print("Para calcular o determinante a matriz deve ser quadrada (linhas = colunas)")
+                continue
+       
         except ValueError:
             print("Digite um numero inteiro")
-def matrizB():
-    while True:
-        try:
-            l = int(input("Dgite quantas linhas a matriz deve ter\n> "))
-            j = int(input("Dgite quantas colunas a matriz deve ter\n> "))
-
-            mB = [[0 for co in range(j)] for lin in range(l)]
-           
-        
-            for lin in range(l):
-                for col in range(j):
-                    mB[lin][col] = int(input(f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> "))
-
-            return mB
-        except ValueError:
-            print("Digite um numero inteiro")
+            continue
+ 
+        matriz = [[0 for co in range(j)] for lin in range(l)]
+ 
+        for lin in range(l):
+            for col in range(j):
+                while True:
+                    try:
+                        matriz[lin][col] = int(input(
+                            f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> "))
+                        break
+                    except ValueError:
+                        print("Digite numeros")
+        return matriz
 def determinaneMatriz(): # todas as diagonais tem que se deitadas
     while True:
         try:
@@ -169,43 +170,37 @@ def main():
             continue
         
         match(opcao):
-            case 1:
-                mA = matrizA()
-                print(f"Matriz A")
-                limparMatriz(mA)
-                mB = matrizB()
-                print(f"Matriz B")
-                limparMatriz(mB)
-                resultado = somaSub(mA, mB, lambda a, b: a + b)
-                limparMatriz(resultado)
-            case 2:
-                mA = matrizA()
-                print(f"Matriz A")
-                limparMatriz(mA)
-                mB = matrizB()
-                print(f"Matriz B")
-                limparMatriz(mB)
-                resultado = somaSub(mA, mB, lambda a, b: a - b)
-                limparMatriz(resultado)
+            case 1 | 2:
+                mA = matriz("Matriz A")
+                limparMatriz(mA, "Matriz A")
+                mB = matriz("Matriz B")
+                limparMatriz(mB, "Matriz B")
+                if len(mA) != len(mB) or len(mA[0]) != len(mB[0]):
+                    print("As matrizes precisam ter o mesmo numero de linhas e colunas")
+                else:
+                    op = (lambda a, b: a + b) if opcao == 1 else (lambda a, b: a - b)
+                    resultado = somaSub(mA, mB, op)
+                    limparMatriz(resultado, "Resultado")
+
             case 3:
-                mA = matrizA()
-                print(f"Matriz A")
-                limparMatriz(mA)
-                mB = matrizB()
-                print(f"Matriz B")
-                limparMatriz(mB)
+                mA = matriz("Matriz A")
+                limparMatriz(mA, "Matriz A")
+                mB = matriz("Matriz B")
+                limparMatriz(mB, "Matriz B")
                 resultado = matrizMult(mA, mB)
-                limparMatriz(resultado)
+                if resultado is not None:
+                    limparMatriz(resultado, "Resultado")
+
             case 4:
-                mD = determinaneMatriz()
-                print("Matriz original:")
-                limparMatriz(mD)
+                mD = matriz("Matriz", quadrada=True)
+                limparMatriz(mD, "Matriz original")
                 det = detReduzir(mD)
-                print(f"O determinante é")
-                limparMatriz(det)
+                if det is not None:
+                    print(f"\nO determinante é: {det}")
 
             case 0:
                 sys.exit()
+
             case _:
                 print("Digite apenas uma das opções")
                 animReiniciando()
@@ -213,4 +208,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
