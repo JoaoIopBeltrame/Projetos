@@ -1,4 +1,4 @@
-# add uma opcao que ja da pra selecionar de x ate y ou l a c pra um numero pra evitar as demoras
+#add uma opcao que ja da pra selecionar de x ate y ou l a c pra um numero pra evitar as demoras
 # mP = [
 #     [1, 5, 2, 3, 8],
 #     [6, 7, 1, 4, 3],
@@ -6,12 +6,18 @@
 #     [4, 1, 3, 2, 6],
 #     [3, 8, 2, 7, 5]
 # ]
-# add um parametro la que vaiimprimir quando terina de preeencher uma matriz e um contaor que vai aumentado conforme o linha e coluna de input
+#add um parametro la que vaiimprimir quando terina de preeencher uma matriz e um contaor que vai aumentado conforme o linha e coluna de input
 
 # tem muito erro aqui FAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH        
 
+# deixar mais bonitinho as coisa dentr da matriz pq se nao fica paia de mais
+
+#colocar a expressao la do numpy
+
+
 import os, sys, time
 
+# interface
 def animReiniciando(palavra, vezes=5):
     for i in range(vezes):
         os.system("cls" if os.name == "nt" else "clear")
@@ -21,8 +27,8 @@ def animReiniciando(palavra, vezes=5):
             sys.stdout.flush()
             time.sleep(0.17)
         print()
-
 def tabela():
+
     print("""
 ╔═══╦══════════════════╗
 ║ 1 ║ Somar matrizes    ║
@@ -32,7 +38,10 @@ def tabela():
 ║ 0 ║ Sair              ║
 ╚═══╩══════════════════╝
 """)
+#add mais coisa
 
+
+# criar as matrizes para soma, subtração, multiplicação e possivel divisao(não existe eu acho)
 def matrizA():
     while True:
         try:
@@ -49,7 +58,6 @@ def matrizA():
             return mA
         except ValueError:
             print("Digite um numero inteiro")
-
 def matrizB():
     while True:
         try:
@@ -66,7 +74,6 @@ def matrizB():
             return mB
         except ValueError:
             print("Digite um numero inteiro")
-
 def determinaneMatriz(): # todas as diagonais tem que se deitadas
     while True:
         try:
@@ -87,10 +94,18 @@ def determinaneMatriz(): # todas as diagonais tem que se deitadas
         except ValueError:
             print("Digite um numero inteiro")
 
-# a'{i,j} = a{i,j} - (a{i,1} × a{1,j}) / a{1,1}
+
+# Operaçãoes que vao ocorrer entre as matrizes
 def detReduzir(mC): # transformar em list comprehension
+
+    # a'{i,j} = a{i,j} - (a{i,1} × a{1,j}) / a{1,1}
+    #if matriz menor do que 3 pq ja da pra fazer mais simples
     while len(mC) > 3:
-        # terminar a redução
+        # TODO 2 - CONDIÇÃO DE PARADA ERRADA
+        # Pensa: Chió reduz a matriz até sobrar só 1 número (o determinante).
+        # Uma matriz 1x1 tem len(mC) == 1. Então em que valor esse "> 3"
+        # deveria estar pra ele continuar reduzindo até sobrar só 1 linha?
+        # Troca o "3" por esse valor.
         try:
             matrizRE = []
             for li in range(1, len(mC)):
@@ -101,21 +116,26 @@ def detReduzir(mC): # transformar em list comprehension
                 matrizRE.append(linhaRE)
             mC = matrizRE
 
-            # retornar cada matriz reduzida 
-            #nao sei como fazer paia de mais
+            # TODO 3 - RETURN NO LUGAR ERRADO
+            # Esse "return mC" abaixo tá DENTRO do while e do try. Isso
+            # significa que a função sai (return) assim que roda UMA
+            # rodada do loop, mesmo se a matriz ainda não chegou no
+            # tamanho final. Testa: numa matriz 5x5, depois de 1 rodada
+            # ela vira 4x4 -- e esse return já devolve ela, incompleta.
+            # Pra resolver: tira esse "return mC" daqui de dentro, deixa
+            # só "mC = matrizRE" rodando dentro do while, e coloca UM
+            # return no final da função (fora do while), devolvendo
+            # o número final. Depois que o while acabar, mC vai ser uma
+            # lista com 1 linha e 1 elemento só -- então o determinante
+            # de verdade é mC[0][0], não a matriz inteira.
             return mC
         except ZeroDivisionError:
             print("A sua matriz dara erro EXPLICAÇÃO CHATA")   #pensar no que escrever ainda
-
-            #colocar a expressao la do numpy
-
-
 def somaSub(mA, mB, operador):
     return [
         [operador(mA[l][c], mB[l][c]) for c in range(len(mA[0]))
         ] for l in range(len(mA))
     ]
-
 def matrizMult(mA, mB):
     if len(mA[0]) == len(mB):
         return [
@@ -141,13 +161,18 @@ def main(): # colocar as opções la em match case e uma tabela com as operaçõ
         match(opcao):
             case 1:
                 mA = matrizA()
+                print(f"Matriz A\n {mA}")
                 mB = matrizB()
+                print(f"Matriz B\n {mB}")
                 resultado = somaSub(mA, mB, lambda a, b: a + b)
                 print(*resultado, sep="\n")
             case 2:
                 mA = matrizA()
+                print(f"Matriz A\n {mA}")
                 mB = matrizB()
-                return somaSub(mA, mB, lambda mA, mB: mA - mB)
+                print(f"Matriz B\n {mB}")
+                resultado = somaSub(mA, mB, lambda a, b: a - b)
+                print(*resultado, sep="\n")
             case 3:
                 mA = matrizA()
                 mB = matrizB()
