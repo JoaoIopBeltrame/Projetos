@@ -121,14 +121,14 @@ def detReduzir(mC): # transformar em list comprehension
     # a'{i,j} = a{i,j} - (a{i,1} × a{1,j}) / a{1,1} // regra de Chió usada para redução de matrizes para achar determinantes
     while len(mC) > 1:
         try:
-           mC = [[round(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0]) for co in range(1, len(mC[0]))] for li in range(1, len(mC))]
-           i += 1
-           print(f"{i}º passo")
-           print(*mC, sep="\n")
+            mC = [[round(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0]) for co in range(1, len(mC[0]))] for li in range(1, len(mC))]
+            i += 1
+            print(f"{i}º passo")
+            print(*mC, sep="\n")
         except ZeroDivisionError:
             print("A sua matriz dara erro o primeiro indice nao pode ser 0")
             return None
-        return mC[0][0]
+    return mC[0][0]
 
 def somaSub(mA, mB, operador):
     return [
@@ -192,4 +192,4 @@ def main(): # colocar as opções la em match case e uma tabela com as operaçõ
                 continue
 
 if __name__ == '__main__':
-    main()
+    main()    
