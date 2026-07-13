@@ -27,6 +27,36 @@ def teste_auto_preencher(matriz):
                 if d == "s":
                     return matriz
                 
+def malhorarTeste(matriz):
+    preenhe_rapido = ("Quer um preencher rapido\n> ").strip().capitalize()
+    if preenhe_rapido in ["Sim", "S"    ]: #teste se funciona ou nao
+        print(""" 
+        1 = SEMELHANTE
+        2- crescente #linha po rlinha, perguntar o ritimo tambem
+        3 decresentente""")
+
+        estilo = int(input(">> "))
+        numero = int(input("Numero da matriz\n> "))
+        match estilo:
+            case 1:
+                for linha in range(len(matriz)):
+                    for item in range(len(matriz[0])):
+                        matriz[linha][item] = numero
+                editarPass = input("Quer continuar ou editar pelo indice?\n> ").strip().capitalize()
+                if editarPass in ["Continua", "Cont", "Continuar", "C"]:
+                    return matriz
+                elif editarPass in ["Editar", "Edit", "Edita","E"]:
+                    ...
+                else:
+                    print("Opção valida ae paizao")
+                    #colocar dentro de  um loop tudo pra voltar pro contiue e etc
+
+
+
+    return False
+    
+
+
 
 import os, sys, time
 
