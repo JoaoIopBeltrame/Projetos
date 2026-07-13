@@ -6,30 +6,17 @@
 
 #colocar a expressao la do numpy
 
-def teste_auto_preencher(matriz):
-    a = input("digite se voce querpreencher rapido\n> ")
-    if a == "s":
-        return True # se pase eu colocar dentro do if os paramentros ja e true ent acho que vai funcionar 50/50
-    False    
-    print(""" 
-    1 = SEMELHANTE
-    2- crescente #linha po rlinha, perguntar o ritimo tambem
-    3 decresentente""")
-    b = input("deSseja uma matriz de um numero semlheante\n> ")
-    if b == "s":
-        c = input("Escolha o numero\n> ")
-        for i in range(len(matriz)):
-            for l in range(matriz[0]):
-                i, l = c
-                print("Essa é a matri que voce deseja usar")
-                print(matriz)
-                d = input(">> ")
-                if d == "s":
-                    return matriz
-                
+def limparMatriz(matriz):
+    print('\n     ' + '  '.join(f'{c:^3}' for c in range(len(matriz[0]))))
+    print('  ╔' + '═' * (len(matriz[0]) * 4))
+    for nume, linha in enumerate(matriz):
+        celulas = ''.join(f'{v:^3}' for v in linha)
+        print(f'{nume} ║  ' + celulas)
+
+
 def malhorarTeste(matriz):
     preenhe_rapido = ("Quer um preencher rapido\n> ").strip().capitalize()
-    if preenhe_rapido in ["Sim", "S"    ]: #teste se funciona ou nao
+    if preenhe_rapido in ["Sim", "S"]: #teste se funciona ou nao
         print(""" 
         1 = SEMELHANTE
         2- crescente #linha po rlinha, perguntar o ritimo tambem
@@ -51,9 +38,7 @@ def malhorarTeste(matriz):
                     print("Opção valida ae paizao")
                     #colocar dentro de  um loop tudo pra voltar pro contiue e etc
 
-
-
-    return False
+    return False # pensar no que fazer nisso s
     
 
 
@@ -186,31 +171,38 @@ def main():
         match(opcao):
             case 1:
                 mA = matrizA()
-                print(f"Matriz A\n {mA}")
+                print(f"Matriz A")
+                limparMatriz(mA)
                 mB = matrizB()
-                print(f"Matriz B\n {mB}")
+                print(f"Matriz B")
+                limparMatriz(mB)
                 resultado = somaSub(mA, mB, lambda a, b: a + b)
-                print(*resultado, sep="\n")
+                limparMatriz(resultado)
             case 2:
                 mA = matrizA()
-                print(f"Matriz A\n {mA}")
+                print(f"Matriz A")
+                limparMatriz(mA)
                 mB = matrizB()
-                print(f"Matriz B\n {mB}")
+                print(f"Matriz B")
+                limparMatriz(mB)
                 resultado = somaSub(mA, mB, lambda a, b: a - b)
-                print(*resultado, sep="\n")
+                limparMatriz(resultado)
             case 3:
                 mA = matrizA()
-                print(f"Matriz A\n {mA}")
+                print(f"Matriz A")
+                limparMatriz(mA)
                 mB = matrizB()
-                print(f"Matriz B\n {mB}")
+                print(f"Matriz B")
+                limparMatriz(mB)
                 resultado = matrizMult(mA, mB)
-                print(*resultado, sep="\n")
+                limparMatriz(resultado)
             case 4:
                 mD = determinaneMatriz()
                 print("Matriz original:")
-                print(*mD, sep="\n")
+                limparMatriz(mD)
                 det = detReduzir(mD)
-                print(f"O determinante é: {det}")
+                print(f"O determinante é")
+                limparMatriz(det)
 
             case 0:
                 sys.exit()
@@ -221,3 +213,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
