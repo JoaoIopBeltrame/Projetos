@@ -1,12 +1,3 @@
-#add uma opcao que ja da pra selecionar de x ate y ou l a c pra um numero pra evitar as demoras
-# mP = [
-#     [1, 5, 2, 3, 8],
-#     [6, 7, 1, 4, 3],
-#     [2, 5, 9, 3, 1],
-#     [4, 1, 3, 2, 6],
-#     [3, 8, 2, 7, 5]
-# ]
-#talvez com true e false
 #add um parametro la que vaiimprimir quando terina de preeencher uma matriz e um contaor que vai aumentado conforme o linha e coluna de input
 
 # tem muito erro aqui FAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH        
@@ -104,20 +95,27 @@ def determinaneMatriz(): # todas as diagonais tem que se deitadas
             if not (l == j):
                 print("Para calcular os deerminantes a matriz deve ter um mesmo numero de linha e de coluna")
                 continue
-
-            mD = [[0 for co in range(j)] for lin in range(l)]
         
-            for lin in range(l) :
-                for col in range(j):
-                    mD[lin][col] = int(input(f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> "))
-
-            return mD
         except ValueError:
             print("Digite um numero inteiro")
+            continue    
+
+        mD = [[0 for co in range(j)] for lin in range(l)]
+        
+        for lin in range(l) :
+            for col in range(j):
+                while True:
+                    try:
+                        mD[lin][col] = int(input(f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> "))
+                        break
+                    except ValueError:  
+                        print("Digite numeros")
+        return mD
+            
 
 # Operaçãoes que vao ocorrer entre as matrizes
 def detReduzir(mC): # transformar em list comprehension
-    i = 1
+    i = 0
     # a'{i,j} = a{i,j} - (a{i,1} × a{1,j}) / a{1,1} // regra de Chió usada para redução de matrizes para achar determinantes
     while len(mC) > 1:
         try:
@@ -145,7 +143,7 @@ def matrizMult(mA, mB):
         ]
     print("Tem que ter c de a igual a l de b") # fazer função la das anumações e um que mostra as regras
 
-def main(): # colocar as opções la em match case e uma tabela com as operações add tambem que as matrizes de soma menos e mult e talves inversa fiquem uma do lado da outra com aqules desenos la e coisa parecida   
+def main():    
     while True:
 
         tabela()
@@ -192,4 +190,4 @@ def main(): # colocar as opções la em match case e uma tabela com as operaçõ
                 continue
 
 if __name__ == '__main__':
-    main()    
+    main()
