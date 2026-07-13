@@ -117,22 +117,18 @@ def determinaneMatriz(): # todas as diagonais tem que se deitadas
 
 # Operaçãoes que vao ocorrer entre as matrizes
 def detReduzir(mC): # transformar em list comprehension
-
+    i = 1
     # a'{i,j} = a{i,j} - (a{i,1} × a{1,j}) / a{1,1} // regra de Chió usada para redução de matrizes para achar determinantes
     while len(mC) > 1:
         try:
-            matrizRE = []
-            for li in range(1, len(mC)):
-                linhaRE = []
-                for co in range(1, len(mC[0])):
-                    valor = round(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0])
-                    linhaRE.append(valor)
-                matrizRE.append(linhaRE)
-            mC = matrizRE
+           mC = [[round(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0]) for co in range(1, len(mC[0]))] for li in range(1, len(mC))]
+           i += 1
+           print(f"{i}º passo")
+           print(*mC, sep="\n")
         except ZeroDivisionError:
             print("A sua matriz dara erro o primeiro indice nao pode ser 0")
-            return mC
-        
+            return None
+        return mC[0][0]
 
 def somaSub(mA, mB, operador):
     return [
@@ -149,7 +145,7 @@ def matrizMult(mA, mB):
         ]
     print("Tem que ter c de a igual a l de b") # fazer função la das anumações e um que mostra as regras
 
-def main(): # colocar as opções la em match case e uma tabela com as operações add tambem que as matrizes de soma menos e mult e talves inversa fiquem uma do lado da outra com aqules desenos la e coisa parecida
+def main(): # colocar as opções la em match case e uma tabela com as operações add tambem que as matrizes de soma menos e mult e talves inversa fiquem uma do lado da outra com aqules desenos la e coisa parecida   
     while True:
 
         tabela()
@@ -178,11 +174,16 @@ def main(): # colocar as opções la em match case e uma tabela com as operaçõ
                 mA = matrizA()
                 print(f"Matriz A\n {mA}")
                 mB = matrizB()
-                print(f"Matriz A\n {mB}")
+                print(f"Matriz B\n {mB}")
                 resultado = matrizMult(mA, mB)
                 print(*resultado, sep="\n")
             case 4:
-                ... #determinante
+                mD = determinaneMatriz()
+                print("Matriz original:")
+                print(*mD, sep="\n")
+                det = detReduzir(mD)
+                print(f"O determinante é: {det}")
+
             case 0:
                 sys.exit()
             case _:
