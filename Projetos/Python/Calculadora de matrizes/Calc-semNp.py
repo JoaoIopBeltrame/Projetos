@@ -64,29 +64,36 @@ class Matriz:
                             print("Digite numeros")
             return m
 
-    def limparMatriz(self, titulo=None):
+    @staticmethod
+    def limparMatriz(matriz, titulo=None):
         if titulo:
             print(f"\n{titulo}")
-            print('     ' + '  '.join(f'{c:^3}' for c in range(len(self.matriz[0]))))
-            print('  ╔' + '═' * (len(self.matriz[0]) * 4))
-            for nume, linha in enumerate(self.matriz):
-                celulas = ''.join(f'{v:^3}' for v in linha)
-                print(f'{nume} ║  ' + celulas)
+        def formata(v):
+            return f'{v:.1f}' if isinstance(v, float) else str(v)
+        largura = max(len(formata(v)) for linha in matriz for v in linha) + 2
+        print('     ' + '  '.join(f'{c:^{largura}}' for c in range(len(matriz[0]))))
+        print('  ╔' + '═' * (len(matriz[0]) * (largura + 2)))
+        for nume, linha in enumerate(matriz):
+            celulas = ''.join(f'{formata(v):^{largura}}' for v in linha)
+            print(f'{nume} ║  ' + celulas)
 
-    def determinante(self):
-        mC = self.matriz
+    @staticmethod
+    def determinante(matriz):
+        mC = matriz
         passo = 0
+        atualizaPivo = 1
         while len(mC) > 1:
             if mC[0][0] == 0:
                 print("A sua matriz vai dar erro: o primeiro indice (pivo) nao pode ser 0")
                 return None
+            atualizaPivo *= mC[0][0]
             mC = [
-                [round(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0]) for co in range(1, len(mC[0]))]
+                [(mC[li][co] - (mC[li][0] * mC[0][co]) / mC[0][0]) for co in range(1, len(mC[0]))]
                 for li in range(1, len(mC))
             ]
             passo += 1
-            limparMatriz(mC, titulo=f"{passo}º passo")
-        return mC[0][0]
+            Matriz.limparMatriz(mC, titulo=f"{passo}º passo")
+        return round(atualizaPivo * mC[0][0])
 
     @staticmethod
     def somaSub(mA, mB, operador):
@@ -118,27 +125,27 @@ def main():
 
         match opcao:
             case 1 | 2:
-                mA = matriz("Matriz A")
-                limparMatriz(mA, "Matriz A")
-                mB = matriz("Matriz B", comparaMatriz=mA)
-                limparMatriz(mB, "Matriz B")
+                mA = Matriz.criarMatriz("Matriz A")
+                Matriz.limparMatriz(mA, "Matriz A")
+                mB = Matriz.criarMatriz("Matriz B", comparaMatriz=mA)
+                Matriz.limparMatriz(mB, "Matriz B")
                 op = (lambda a, b: a + b) if opcao == 1 else (lambda a, b: a - b)
-                resultado = somaSub(mA, mB, op)
-                limparMatriz(resultado, "Resultado")
+                resultado = Matriz.somaSub(mA, mB, op)
+                Matriz.limparMatriz(resultado, "Resultado")
 
             case 3:
-                mA = matriz("Matriz A")
-                limparMatriz(mA, "Matriz A")
-                mB = matriz("Matriz B")
-                limparMatriz(mB, "Matriz B")
-                resultado = matrizMult(mA, mB)
+                mA = Matriz.criarMatriz("Matriz A")
+                Matriz.limparMatriz(mA, "Matriz A")
+                mB = Matriz.criarMatriz("Matriz B")
+                Matriz.limparMatriz(mB, "Matriz B")
+                resultado = Matriz.matrizMult(mA, mB)
                 if resultado is not None:
-                    limparMatriz(resultado, "Resultado")
+                    Matriz.limparMatriz(resultado, "Resultado")
 
             case 4:
-                mD = matriz("Matriz", quadrada=True)
-                limparMatriz(mD, "Matriz original")
-                det = detReduzir(mD)
+                mD = Matriz.criarMatriz("Matriz", quadrada=True)
+                Matriz.limparMatriz(mD, "Matriz original")
+                det = Matriz.determinante(mD)
                 if det is not None:
                     print(f"\nO determinante e: {det}")
 
