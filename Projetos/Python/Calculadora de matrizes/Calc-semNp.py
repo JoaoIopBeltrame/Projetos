@@ -1,5 +1,31 @@
 import os, sys, time
 
+class Tela:
+    @staticmethod  # usa quando é coisa direta que não precisa ler nem mudar dados daquele objeto específico
+    
+    def animReiniciando(palavra, vezes=5):
+        for i in range(vezes):
+            os.system("cls" if os.name == "nt" else "clear")
+            sys.stdout.write(palavra)
+            for k in range(3):
+                sys.stdout.write(".")
+                sys.stdout.flush()
+                time.sleep(0.17)
+            print()
+    
+    @staticmethod
+    
+    def tabela():
+        print("""
+    ╔═══╦══════════════════╗
+    ║ 1 ║ Somar matrizes    ║
+    ║ 2 ║ Subtrair matrizes ║
+    ║ 3 ║ Multiplicar       ║
+    ║ 4 ║ Determinante      ║
+    ║ 0 ║ Sair              ║
+    ╚═══╩══════════════════╝
+    """)
+        
 def limparMatriz(matriz, titulo=None):
     if titulo:
         print(f"\n{titulo}")
@@ -8,27 +34,6 @@ def limparMatriz(matriz, titulo=None):
     for nume, linha in enumerate(matriz):
         celulas = ''.join(f'{v:^3}' for v in linha)
         print(f'{nume} ║  ' + celulas)
-
-def animReiniciando(palavra, vezes=5):
-    for i in range(vezes):
-        os.system("cls" if os.name == "nt" else "clear")
-        sys.stdout.write(palavra)
-        for k in range(3):
-            sys.stdout.write(".")
-            sys.stdout.flush()
-            time.sleep(0.17)
-        print()
-
-def tabela():
-    print("""
-╔═══╦══════════════════╗
-║ 1 ║ Somar matrizes    ║
-║ 2 ║ Subtrair matrizes ║
-║ 3 ║ Multiplicar       ║
-║ 4 ║ Determinante      ║
-║ 0 ║ Sair              ║
-╚═══╩══════════════════╝
-""")
 
 def matriz(nome="Matriz", quadrada=False, comparaMatriz=None):
     while True:
