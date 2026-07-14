@@ -1,4 +1,5 @@
 import os, sys, time
+#adicionar mais coisas
 
 class Tela:
     @staticmethod  # usa quando é coisa direta que não precisa ler nem mudar dados daquele objeto específico   
