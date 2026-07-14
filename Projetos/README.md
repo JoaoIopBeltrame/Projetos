@@ -6,8 +6,8 @@ Repositório com projetos organizados por linguagem. Cada pasta representa uma l
 
 | Pasta | Linguagem | O que tem |
 |---|---|---|
-| [`C/`](./C) | C | calculadoras, conversores, bitwise |
-| [`Python/`](./Python) | Python | calculadora de matrizes, jogos, automações |
+| [`C/`](./C) | C |
+| [`Python/`](./Python) | Python | 
 
 ## Como navegar
 
