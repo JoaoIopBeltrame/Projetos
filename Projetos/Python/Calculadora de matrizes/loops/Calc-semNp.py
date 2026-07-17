@@ -41,8 +41,9 @@ class Tela:
     digitar um numero para ser o limite e reiniar o loop de exponencial
               se nao for digitado nada sera reinciado a cada linha
     """)
-        
-def matriz(): # serve para matriz A e B
+
+
+def criar_matriz(): # serve para matriz A e B
     while 1:
         try:
             l = int(input("Digite o NUMERO DE LINHAS que a matriz deve ter\n> "))
@@ -110,6 +111,7 @@ def matriz(): # serve para matriz A e B
 
 def sum_sub(matrizA, matrizB, operador):
     return[
+       
         [operador(matrizA[lin][col], matrizB[lin][col]) for col in range(len(matrizA[0]))] 
         for lin in range(len(matrizA))
     ]
@@ -126,7 +128,59 @@ def multiplicacao(matrizA, matrizB):
         print("ERRO! O numero de colunas da matriz A deve ser igual ao numero de linhas de matrizeB ")
         return None
 
+def matriz(matriz, titulo=None):
+    if titulo:
+        print(f"\n{titulo}")
+    textos = [[str(v) for v in linha] for linha in matriz]
+    largura = max(len(v) for linha in textos for v in linha) + 2
 
+    print('     ' + '  '.join(f'{c:^{largura}}' for c in range(len(matriz[0]))))
+    print('  ╔' + '═' * (len(matriz[0]) * (largura + 2)))
+    for nume, linha in enumerate(textos):
+        print(f'{nume} ║  ' + ''.join(f'{v:^{largura}}' for v in linha))
+
+
+
+def determinante():
+
+    l = int(input("linha >> "))
+    j = int(input("coluna >> "))
+    
+    m = [[Fraction(0) for _ in range(j)] for _ in range(l)]
+
+    sinal_troca_de_linha = 1    
+
+    while len(m) > 2:
+
+        n_atual = len(m)
+
+        if m[0][0] == 0:
+            for i in range(1, n_atual):
+                if m[i][0] != 0:
+                    m[0], m[i] = m[i], m[0]      # troca com a linha i (não sempre m[1])
+                    sinal_troca_de_linha *= -1
+                    break
+        else:
+            return Fraction(0) #coluna inteira de 0
+    
+    
+
+    nova_matriz = [[Fraction(0) for _ in range(n_atual - 1)] for _ in range(n_atual - 1)]
+
+    pivo = m[0][0]
+    fator = m[1][0] / pivo
+    
+    for l in range(n_atual -1):
+        for c in range(n_atual -1):
+            nova_matriz[i][j] = m[i][j] - fator * m[0][j]
+            print(nova_matriz)
+        
+    m = nova_matriz
+
+    a, b = m[0]
+    c, d = m[1]
+
+    return sinal_troca_de_linha * (a * d - c * b)
 
 
 
