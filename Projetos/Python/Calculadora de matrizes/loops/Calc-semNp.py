@@ -1,5 +1,5 @@
 import os, sys, time
-from fractions import Fraction
+from fractions import Fraction as Fr
 
 RESPONSES_YES = ["Sim", "S", "Si"]
 RESPONSES_NO = ["Não", "Nao", "N", "Na", "No"]
@@ -60,7 +60,7 @@ def criar_matriz(): # serve para matriz A e B
             continue
         
         break
-    m = [[Fraction(0) for _ in range(c)] for _ in range(l)]
+    m = [[Fr(0) for _ in range(c)] for _ in range(l)]
     print("Matriz atual:")
     print(m)
                 
@@ -71,7 +71,7 @@ def criar_matriz(): # serve para matriz A e B
             if confirmation_auto_fill in RESPONSES_YES:
                 number_fill = int(input("Digite o numero que deseja que a ua matriz seja\n> "))
                 
-                m = [[Fraction(number_fill) for _ in range(c)] for _ in range(l)]
+                m = [[Fr(number_fill) for _ in range(c)] for _ in range(l)]
                 break
             
             elif confirmation_auto_fill in RESPONSES_NO: # terminar depois 
@@ -87,7 +87,7 @@ def criar_matriz(): # serve para matriz A e B
                         for col in range(c):              
                             while True:
                                 try:
-                                    m[lin][col] = Fraction(int(input( f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> ")))
+                                    m[lin][col] = Fr(int(input( f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> ")))
                                     break
                                 except ValueError:
                                     print("Digite numeros")
@@ -128,7 +128,7 @@ def multiplicacao(matrizA, matrizB):
         print("ERRO! O numero de colunas da matriz A deve ser igual ao numero de linhas de matrizeB ")
         return None
 
-def matriz(matriz, titulo=None):
+def matriz(matriz, titulo=None): #corrigir bugs 
     if titulo:
         print(f"\n{titulo}")
     textos = [[str(v) for v in linha] for linha in matriz]
@@ -139,52 +139,36 @@ def matriz(matriz, titulo=None):
     for nume, linha in enumerate(textos):
         print(f'{nume} ║  ' + ''.join(f'{v:^{largura}}' for v in linha))
 
-
-
-def determinante():
-
-    l = int(input("linha >> "))
-    j = int(input("coluna >> "))
-    
-    m = [[Fraction(0) for _ in range(j)] for _ in range(l)]
-
-    sinal_troca_de_linha = 1    
-
-    while len(m) > 2:
-
-        n_atual = len(m)
-
+def gauss():
+    while 1:
+        linhCol = int(input("Digite qual a geometria dela\n>> "))
+        m = [[0 for _ in range(linhCol)] for _ in range(linhCol)]
+        for i in range(len(m)):
+            for j in range(len(m[0])):
+                m[i][j] = int(input(f"{m[i][j]}>> "))
+        
+        sinal =1
         if m[0][0] == 0:
-            for i in range(1, n_atual):
+            for i in range(len(m) - 1):
                 if m[i][0] != 0:
-                    m[0], m[i] = m[i], m[0]      # troca com a linha i (não sempre m[1])
-                    sinal_troca_de_linha *= -1
+                    m[0], m[i] = m[i], m[0]
+                    sinal *= -1
                     break
         else:
-            return Fraction(0) #coluna inteira de 0
-    
-    
+            return Fr(0)
+# exemplo:     
+#  linha 2 = linha 2 − 
+# (elemento que vai virar 0, que está na linha 2 ÷ elemento pivô, que está na linha pivô) 
+# × linha pivô inteira
 
-    nova_matriz = [[Fraction(0) for _ in range(n_atual - 1)] for _ in range(n_atual - 1)]
+        for i in range(len(m) - 1):
+            for j in range(i + 1, len(m)):
+                fator = m[j][i] / m[j][j] 
 
-    pivo = m[0][0]
-    fator = m[1][0] / pivo
-    
-    for l in range(n_atual -1):
-        for c in range(n_atual -1):
-            nova_matriz[i][j] = m[i][j] - fator * m[0][j]
-            print(nova_matriz)
-        
-    m = nova_matriz
-
-    a, b = m[0]
-    c, d = m[1]
-
-    return sinal_troca_de_linha * (a * d - c * b)
-
-
-
-
+                for k in range(i, len(m)):
+                    m[i][k] -= fator * m[j][k]
+            
+            return m
 
 
 
