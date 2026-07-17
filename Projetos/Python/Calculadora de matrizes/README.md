@@ -22,4 +22,4 @@ A ideia não é ter três calculadoras diferentes, é mostrar o mesmo problema r
 
 ## Autor
 
-João I Beltrame
+João Iop Beltrame
