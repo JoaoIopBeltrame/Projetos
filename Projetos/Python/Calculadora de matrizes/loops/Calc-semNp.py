@@ -42,7 +42,6 @@ class Tela:
               se nao for digitado nada sera reinciado a cada linha
     """)
 
-
 def criar_matriz(): # serve para matriz A e B
     while 1:
         try:
@@ -142,38 +141,95 @@ def matriz(matriz, titulo=None): #corrigir bugs
 def gauss():
     while 1:
         linhCol = int(input("Digite qual a geometria dela\n>> "))
-        m = [[0 for _ in range(linhCol)] for _ in range(linhCol)]
+        m = [[Fr(0) for _ in range(linhCol)] for _ in range(linhCol)]
         for i in range(len(m)):
             for j in range(len(m[0])):
-                m[i][j] = int(input(f"{m[i][j]}>> "))
+                m[i][j] = Fr(int(input(f"Linha -> {i} Coluna -> {j}\n>> ")))
+        break   
         
-        sinal =1
-        if m[0][0] == 0:
-            for i in range(len(m) - 1):
-                if m[i][0] != 0:
-                    m[0], m[i] = m[i], m[0]
+    t = len(m)
+
+    sinal = 1
+    for i in range(t):
+        if m[i][i] == 0:
+            for k in range(i + 1, t):
+                if m[k][i] != 0:
+                    m[i], m[k] = m[k], m[i]
                     sinal *= -1
                     break
-        else:
-            return Fr(0)
+            else:
+                return Fr(0)
+            
+        for j in range(i + 1, t):
+            fator = m[j][i] / m[i][i]
+            for k in range(i, t):
+                m[j][k] -= fator * m[i][k]
+
+    resultado = sinal
+    for i in range(t):
+        resultado *= m[i][i]
+    return resultado
+
+
+def main_SomaSubtracao():
+    mA = criar_matriz()
+    matriz(mA, "Matriz A")
+    mB = criar_matriz()
+    matriz(mB, "Matriz B")
+    op = (lambda a, b: a + b) if op == 1 else (lambda a, b: a - b)
+    resultado = sum_sub(mA, mB, op)
+    matriz(resultado, "Resultado")
+
+def main_Multiplicacao():
+    mA = criar_matriz()
+    matriz(mA, "Matriz A")
+    mB = criar_matriz()
+    matriz(mB, "Matriz B")
+    resultado = multiplicacao(mA, mB)
+    if resultado is not None:
+        matriz(resultado, "Resultado")
+
+def main_Determinante():
+    mD = criar_matriz()
+    matriz(mD, "Matriz original")
+    det = gauss()
+    if det is not None:
+        print(f"\nO determinante e: {det}")
+
 # exemplo:     
 #  linha 2 = linha 2 − 
 # (elemento que vai virar 0, que está na linha 2 ÷ elemento pivô, que está na linha pivô) 
 # × linha pivô inteira
 
-        for i in range(len(m) - 1):
-            for j in range(i + 1, len(m)):
-                fator = m[j][i] / m[j][j] 
 
-                for k in range(i, len(m)):
-                    m[i][k] -= fator * m[j][k]
-            
-            return m
+def main():
+    while True:
+        Tela.tabela()
+        try:
+            opcao = int(input(">> "))
+        except ValueError:
+            print("Digite um numero")
+            continue
 
+        match opcao:
+            case 1 | 2:
+                main_SomaSubtracao()
+            case 3:
+                main_Multiplicacao()
+            case 4:
+                main_Determinante()
+            case 0:
+                Tela.animReiniciando("Encerrando sistema")
+                sys.exit()
+            case _:
+                print("Digite apenas uma das opcoes")
+                Tela.animReiniciando("Reiniciando")
+                continue
 
+        input("\nPressione Enter para voltar ao menu...")
 
-
-
+if __name__ == '__main__':
+    main()
 
 
 
