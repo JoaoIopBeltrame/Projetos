@@ -1,7 +1,7 @@
 import os, sys, time
 from fractions import Fraction as Fr
 
-RESPONSES_YES = ["Sim", "S", "Si"]
+RESPONSES_YES = ["Sim", "S", "Si", "Y", "Ye", "Yes"]
 RESPONSES_NO = ["Não", "Nao", "N", "Na", "No"]
 
 class Tela:
@@ -61,7 +61,8 @@ def criar_matriz(): # serve para matriz A e B
         break
     m = [[Fr(0) for _ in range(c)] for _ in range(l)]
     print("Matriz atual:")
-    print(m)
+    for linha in m:
+        print([str(item) for item in linha])
                 
     while 1:
         try:
@@ -74,27 +75,43 @@ def criar_matriz(): # serve para matriz A e B
                 break
             
             elif confirmation_auto_fill in RESPONSES_NO: # terminar depois 
-                ask_expo_num = input("Deseja Que o auto preenchimento tenha um cresmento exponencial?")
-                print("Caso contrario sera tera que colocar manualmente cada numero")
-                
-                if ask_expo_num in RESPONSES_YES:
-                    Tela.regra()
-                    number = int(input(">> "))
-                    ...
-                elif ask_expo_num in RESPONSES_NO:
-                    for lin in range(l):
-                        for col in range(c):              
-                            while True:
-                                try:
-                                    m[lin][col] = Fr(int(input( f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> ")))
-                                    break
-                                except ValueError:
-                                    print("Digite numeros")
-                    break 
-                
-                else:
-                    ...
-                
+                while 1:
+                    ask_expo_num = input("Deseja Que o auto preenchimento tenha um cresmento exponencial?")
+                    print("Caso contrario sera tera que colocar manualmente cada numero")
+                    
+                    if ask_expo_num in RESPONSES_YES:
+                        limite = input("Deseja que seja digitado o numero inicial e o limite do crescimento exponencial?\n>> ")
+                        if limite in RESPONSES_YES:
+                            Tela.regra()
+                            numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
+                            numero_limite = Fr(int(input("Digite o numero limite\n>> ")))
+                            numero_crescimento = Fr(int(input("Digite o numero de exponencial\n>> ")))
+                            # colocar parte que vai ser numero crecimento diferente pra cada linha 
+
+                        else:
+                            ...
+                       
+                        
+
+
+
+
+                    elif ask_expo_num in RESPONSES_NO:
+                        for lin in range(l):
+                            for col in range(c):              
+                                while True:
+                                    try:
+                                        m[lin][col] = Fr(int(input( f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> ")))
+                                        break
+                                    except ValueError:
+                                        print("Digite numeros")
+                        break 
+                    
+                    else:
+                        print("DIgite uma opção valida")
+                        time.sleep(1)
+                        Tela.loading()
+                        continue   
             
             else:
                 print("Digite uma opção valida")
@@ -103,9 +120,7 @@ def criar_matriz(): # serve para matriz A e B
         
         except ValueError:
             print("Digite apenas numeros")
-        
         break
-
     return m
 
 def sum_sub(matrizA, matrizB, operador):
@@ -169,7 +184,6 @@ def gauss():
     for i in range(t):
         resultado *= m[i][i]
     return resultado
-
 
 def main_SomaSubtracao():
     mA = criar_matriz()
