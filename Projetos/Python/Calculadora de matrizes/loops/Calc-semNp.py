@@ -42,6 +42,7 @@ class Tela:
               se nao for digitado nada sera reinciado a cada linha
     """)
 
+# nao finalizei ainda to me perdendo eu mesmo nisso pqp
 def criar_matriz(): # serve para matriz A e B
     while 1:
         try:
@@ -76,17 +77,62 @@ def criar_matriz(): # serve para matriz A e B
             
             elif confirmation_auto_fill in RESPONSES_NO: # terminar depois 
                 while 1:
-                    ask_expo_num = input("Deseja Que o auto preenchimento tenha um cresmento exponencial?")
+
+                    ask_expo_num = input("Deseja Que o auto preenchimento tenha um cresmento exponencial?").strip().capitalize()
                     print("Caso contrario sera tera que colocar manualmente cada numero")
                     
                     if ask_expo_num in RESPONSES_YES:
                         limite = input("Deseja que seja digitado o numero inicial e o limite do crescimento exponencial?\n>> ")
-                        if limite in RESPONSES_YES:
-                            Tela.regra()
-                            numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
-                            numero_limite = Fr(int(input("Digite o numero limite\n>> ")))
-                            numero_crescimento = Fr(int(input("Digite o numero de exponencial\n>> ")))
-                            # colocar parte que vai ser numero crecimento diferente pra cada linha 
+                        while 1:
+                            numero_expo_linha_diferente = input("Deseja que o numero de crescimento seja igual para toda a matriz ou que voceva mudando de linha em linha 1 para matriz inteira 2 para linha em linha?\n>> ")
+                            match numero_expo_linha_diferente:
+                                case "1":
+                                    Tela.regra()
+                                    continua_ou_nao = input("Voce deseja que os numeros subsequentes do limite sejam 0, ou que reinicie o loop e continue desde o inicio para os restantes 1 (preencher resto com 0) 2 (reiniciar)\n>> ")
+                                    match continua_ou_nao:
+                                        case "1":
+                                            numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
+                                            numero_limite = Fr(int(input("Digite o numero limite\n>> ")))
+                                            numero_crescimento = Fr(int(input("Digite o numero de exponencial\n>> ")))
+
+                                            for lin in range(len(m)):
+                                                for col in range(len(m[0])):
+                                                    if numero_inicial <= numero_limite:
+                                                        m[lin][col] = numero_inicial
+                                                        numero_inicial *= numero_crescimento
+                                                    else:
+                                                        m[lin][col] = Fr(0)
+                                            break
+
+                                        case "2":
+                                            numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
+                                            numero_limite = Fr(int(input("Digite o numero limite\n>> ")))
+                                            numero_crescimento = Fr(int(input("Digite o numero de exponencial\n>> ")))
+                                            
+                                            numero_inicial_holder = numero_inicial 
+
+                                            for lin in range(len(m)):
+                                                for col in range(len(m[0])):
+                                                    if numero_inicial <= numero_limite:
+                                                        m[lin][col] = numero_inicial
+                                                        numero_inicial *= numero_crescimento
+                                                    else:
+                                                        numero_inicial = numero_inicial_holder
+                                                        for lin in range(len(m)):
+                                                            for col in range(len(m[0])):
+                                                                if numero_inicial <= numero_limite:
+                                                                    m[lin][col] = numero_inicial
+                                                                    numero_inicial *= numero_crescimento
+                                            break  # BUG 5 corrigido: sem isso, o while voltava a perguntar numero_expo_linha_diferente
+                                case "2":
+                                    # AINDA NAO IMPLEMENTADO por voce - nao mexi aqui
+                                    ...
+                                case _:
+                                    print("Digite uma opção valida")
+                                    Tela.reloading()
+                                    continue
+                        
+                            # colocar parte que vai ser numero crecimento diferente pra cada linha
 
                         else:
                             ...
@@ -110,7 +156,7 @@ def criar_matriz(): # serve para matriz A e B
                     else:
                         print("DIgite uma opção valida")
                         time.sleep(1)
-                        Tela.loading()
+                        Tela.reloading("Voltando")  # BUG 2 corrigido: Tela.loading() nao existia
                         continue   
             
             else:
@@ -120,6 +166,7 @@ def criar_matriz(): # serve para matriz A e B
         
         except ValueError:
             print("Digite apenas numeros")
+            continue  # BUG 4 corrigido: sem isso a funcao devolvia a matriz incompleta
         break
     return m
 
@@ -137,31 +184,23 @@ def multiplicacao(matrizA, matrizB):
             [sum(matrizA[l][k] * matrizB[k][c] for k in range(len(matrizB))) for c in range(len(matrizB[0]))]
             for l in range(len(matrizA))
             ]
-    
+
     else:
         print("ERRO! O numero de colunas da matriz A deve ser igual ao numero de linhas de matrizeB ")
         return None
 
-def matriz(matriz, titulo=None): #corrigir bugs 
+def matriz(mat, titulo=None):
     if titulo:
         print(f"\n{titulo}")
-    textos = [[str(v) for v in linha] for linha in matriz]
+    textos = [[str(v) for v in linha] for linha in mat]
     largura = max(len(v) for linha in textos for v in linha) + 2
 
-    print('     ' + '  '.join(f'{c:^{largura}}' for c in range(len(matriz[0]))))
-    print('  ╔' + '═' * (len(matriz[0]) * (largura + 2)))
+    print('     ' + ''.join(f'{c:^{largura}}' for c in range(len(mat[0]))))
+    print('  ╔' + '═' * (len(mat[0]) * largura))
     for nume, linha in enumerate(textos):
         print(f'{nume} ║  ' + ''.join(f'{v:^{largura}}' for v in linha))
 
-def gauss():
-    while 1:
-        linhCol = int(input("Digite qual a geometria dela\n>> "))
-        m = [[Fr(0) for _ in range(linhCol)] for _ in range(linhCol)]
-        for i in range(len(m)):
-            for j in range(len(m[0])):
-                m[i][j] = Fr(int(input(f"Linha -> {i} Coluna -> {j}\n>> ")))
-        break   
-        
+def gauss(m):
     t = len(m)
 
     sinal = 1
@@ -185,12 +224,12 @@ def gauss():
         resultado *= m[i][i]
     return resultado
 
-def main_SomaSubtracao():
+def main_SomaSubtracao(opcao):
     mA = criar_matriz()
     matriz(mA, "Matriz A")
     mB = criar_matriz()
     matriz(mB, "Matriz B")
-    op = (lambda a, b: a + b) if op == 1 else (lambda a, b: a - b)
+    op = (lambda a, b: a + b) if opcao == 1 else (lambda a, b: a - b)
     resultado = sum_sub(mA, mB, op)
     matriz(resultado, "Resultado")
 
@@ -206,7 +245,7 @@ def main_Multiplicacao():
 def main_Determinante():
     mD = criar_matriz()
     matriz(mD, "Matriz original")
-    det = gauss()
+    det = gauss(mD)
     if det is not None:
         print(f"\nO determinante e: {det}")
 
@@ -227,26 +266,20 @@ def main():
 
         match opcao:
             case 1 | 2:
-                main_SomaSubtracao()
+                main_SomaSubtracao(opcao) 
             case 3:
                 main_Multiplicacao()
             case 4:
                 main_Determinante()
             case 0:
-                Tela.animReiniciando("Encerrando sistema")
+                Tela.reloading("Encerrando sistema")
                 sys.exit()
             case _:
                 print("Digite apenas uma das opcoes")
-                Tela.animReiniciando("Reiniciando")
+                Tela.reloading("Reiniciando")
                 continue
 
         input("\nPressione Enter para voltar ao menu...")
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
