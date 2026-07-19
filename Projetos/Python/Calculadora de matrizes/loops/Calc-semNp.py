@@ -42,13 +42,11 @@ class Tela:
               se nao for digitado nada sera reinciado a cada linha
     """)
 
-# nao finalizei ainda to me perdendo eu mesmo nisso pqp
-def criar_matriz(): # serve para matriz A e B
+def criar_matriz():  # serve para matriz A e B
     while 1:
         try:
             l = int(input("Digite o NUMERO DE LINHAS que a matriz deve ter\n> "))
             c = int(input("Digite o NUMERO DE COLUNAS que a matriz deve ter\n> "))
-        
         except ValueError:
             print("Digite apenas numeros")
             Tela.reloading("Voltando")
@@ -58,37 +56,40 @@ def criar_matriz(): # serve para matriz A e B
             input(">>")
             Tela.reloading("Voltando")
             continue
-        
         break
+
     m = [[Fr(0) for _ in range(c)] for _ in range(l)]
     print("Matriz atual:")
     for linha in m:
         print([str(item) for item in linha])
-                
+
     while 1:
         try:
-        
             confirmation_auto_fill = input("Deseja preencher inteira com apenas um numero?\n").strip().capitalize()
             if confirmation_auto_fill in RESPONSES_YES:
-                number_fill = int(input("Digite o numero que deseja que a ua matriz seja\n> "))
-                
+                number_fill = int(input("Digite o numero que deseja que a sua matriz seja\n> "))
                 m = [[Fr(number_fill) for _ in range(c)] for _ in range(l)]
                 break
-            
-            elif confirmation_auto_fill in RESPONSES_NO: # terminar depois 
-                while 1:
 
+            elif confirmation_auto_fill in RESPONSES_NO:
+                while 1:
                     ask_expo_num = input("Deseja Que o auto preenchimento tenha um cresmento exponencial?").strip().capitalize()
                     print("Caso contrario sera tera que colocar manualmente cada numero")
-                    
+
                     if ask_expo_num in RESPONSES_YES:
                         limite = input("Deseja que seja digitado o numero inicial e o limite do crescimento exponencial?\n>> ")
                         while 1:
-                            numero_expo_linha_diferente = input("Deseja que o numero de crescimento seja igual para toda a matriz ou que voceva mudando de linha em linha 1 para matriz inteira 2 para linha em linha?\n>> ")
+                            numero_expo_linha_diferente = input(
+                                "Deseja que o numero de crescimento seja igual para toda a matriz "
+                                "ou que va mudando de linha em linha? 1 para matriz inteira, 2 para linha em linha\n>> "
+                            )
                             match numero_expo_linha_diferente:
                                 case "1":
                                     Tela.regra()
-                                    continua_ou_nao = input("Voce deseja que os numeros subsequentes do limite sejam 0, ou que reinicie o loop e continue desde o inicio para os restantes 1 (preencher resto com 0) 2 (reiniciar)\n>> ")
+                                    continua_ou_nao = input(
+                                        "Voce deseja que os numeros subsequentes do limite sejam 0, ou que reinicie "
+                                        "o loop e continue desde o inicio para os restantes 1 (preencher resto com 0) 2 (reiniciar)\n>> "
+                                    )
                                     match continua_ou_nao:
                                         case "1":
                                             numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
@@ -108,8 +109,7 @@ def criar_matriz(): # serve para matriz A e B
                                             numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
                                             numero_limite = Fr(int(input("Digite o numero limite\n>> ")))
                                             numero_crescimento = Fr(int(input("Digite o numero de exponencial\n>> ")))
-                                            
-                                            numero_inicial_holder = numero_inicial 
+                                            numero_inicial_holder = numero_inicial
 
                                             for lin in range(len(m)):
                                                 for col in range(len(m[0])):
@@ -118,56 +118,68 @@ def criar_matriz(): # serve para matriz A e B
                                                         numero_inicial *= numero_crescimento
                                                     else:
                                                         numero_inicial = numero_inicial_holder
-                                                        for lin in range(len(m)):
-                                                            for col in range(len(m[0])):
+                                                        for lin2 in range(len(m)):
+                                                            for col2 in range(len(m[0])):
                                                                 if numero_inicial <= numero_limite:
-                                                                    m[lin][col] = numero_inicial
+                                                                    m[lin2][col2] = numero_inicial
                                                                     numero_inicial *= numero_crescimento
-                                            break  # BUG 5 corrigido: sem isso, o while voltava a perguntar numero_expo_linha_diferente
+                                            break
+
+                                        case _:
+                                            print("Digite opção valida")
+                                            Tela.reloading("Voltando")
+                                            continue
+                                    break  # fecha Loop B (case "1")
+
                                 case "2":
-                                    # AINDA NAO IMPLEMENTADO por voce - nao mexi aqui
-                                    ...
+                                    for lin in range(len(m)):
+                                        numero_inicial = Fr(int(input("Digite o numero inicial\n>> ")))
+                                        numero_limite = Fr(int(input("Digite o numero limite\n>> ")))
+                                        numero_crescimento = Fr(int(input("Digite o numero de exponencial\n>> ")))
+
+                                        for col in range(len(m[0])):
+                                            if numero_inicial <= numero_limite:
+                                                m[lin][col] = numero_inicial
+                                                numero_inicial *= numero_crescimento
+                                            else:
+                                                m[lin][col] = Fr(0)
+                                    break  # fecha Loop B (case "2")
+
                                 case _:
                                     print("Digite uma opção valida")
-                                    Tela.reloading()
+                                    Tela.reloading("Voltando")
                                     continue
-                        
-                            # colocar parte que vai ser numero crecimento diferente pra cada linha
-
-                        else:
-                            ...
-                       
-                        
-
-
-
+                        break  # fecha Loop A (matriz já preenchida)
 
                     elif ask_expo_num in RESPONSES_NO:
                         for lin in range(l):
-                            for col in range(c):              
+                            for col in range(c):
                                 while True:
                                     try:
-                                        m[lin][col] = Fr(int(input( f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> ")))
+                                        m[lin][col] = Fr(int(input(
+                                            f"Digite o numero da matriz (COORDENADA: linha -> {lin + 1} | coluna -> {col + 1})\n> "
+                                        )))
                                         break
                                     except ValueError:
                                         print("Digite numeros")
-                        break 
-                    
+                        break
+
                     else:
-                        print("DIgite uma opção valida")
+                        print("Digite uma opção valida")
                         time.sleep(1)
-                        Tela.reloading("Voltando")  # BUG 2 corrigido: Tela.loading() nao existia
-                        continue   
-            
+                        Tela.reloading("Voltando")
+                        continue
+
             else:
                 print("Digite uma opção valida")
-                Tela.reloading()
+                Tela.reloading("Voltando")
                 continue
-        
+
         except ValueError:
             print("Digite apenas numeros")
-            continue  # BUG 4 corrigido: sem isso a funcao devolvia a matriz incompleta
+            continue
         break
+
     return m
 
 def sum_sub(matrizA, matrizB, operador):
@@ -253,7 +265,6 @@ def main_Determinante():
 #  linha 2 = linha 2 − 
 # (elemento que vai virar 0, que está na linha 2 ÷ elemento pivô, que está na linha pivô) 
 # × linha pivô inteira
-
 
 def main():
     while True:
