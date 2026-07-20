@@ -177,18 +177,22 @@ def criar_matriz():  # serve para matriz A e B
 
         except ValueError:
             print("Digite apenas numeros")
-            continue
+            continue    
         break
 
     return m
 
 def sum_sub(matrizA, matrizB, operador):
-    return[
-       
-        [operador(matrizA[lin][col], matrizB[lin][col]) for col in range(len(matrizA[0]))] 
-        for lin in range(len(matrizA))
-    ]
-
+    if len(matrizA) == len(matrizB) and len(matrizA[0]) == len(matrizB[0]):
+        return[
+        
+            [operador(matrizA[lin][col], matrizB[lin][col]) for col in range(len(matrizA[0]))] 
+            for lin in range(len(matrizA))
+        ]
+    else:
+        print("Para ser efetuada a soma e subtração de matrizes, e preciso que a matrizA tem a mesma quantia de linhas em numeros e matrizB colunas ")
+        Tela.reloading("Voltando")
+    
 def multiplicacao(matrizA, matrizB):
     if len(matrizA[0]) == len(matrizB):
         
@@ -213,28 +217,32 @@ def matriz(mat, titulo=None):
         print(f'{nume} ║  ' + ''.join(f'{v:^{largura}}' for v in linha))
 
 def gauss(m):
-    t = len(m)
+    if len(m) == len(m[0]):
+        t = len(m)
 
-    sinal = 1
-    for i in range(t):
-        if m[i][i] == 0:
-            for k in range(i + 1, t):
-                if m[k][i] != 0:
-                    m[i], m[k] = m[k], m[i]
-                    sinal *= -1
-                    break
-            else:
-                return Fr(0)
-            
-        for j in range(i + 1, t):
-            fator = m[j][i] / m[i][i]
-            for k in range(i, t):
-                m[j][k] -= fator * m[i][k]
+        sinal = 1
+        for i in range(t):
+            if m[i][i] == 0:
+                for k in range(i + 1, t):
+                    if m[k][i] != 0:
+                        m[i], m[k] = m[k], m[i]
+                        sinal *= -1
+                        break
+                else:
+                    return Fr(0)
+                
+            for j in range(i + 1, t):
+                fator = m[j][i] / m[i][i]
+                for k in range(i, t):
+                    m[j][k] -= fator * m[i][k]
 
-    resultado = sinal
-    for i in range(t):
-        resultado *= m[i][i]
-    return resultado
+        resultado = sinal
+        for i in range(t):
+            resultado *= m[i][i]
+        return resultado
+    else:
+        print("E preiso ser umamatriz quadrada para fazer o determinantes linh e colunas iguasi")
+        Tela.reloading("Voltando")
 
 def main_SomaSubtracao(opcao):
     mA = criar_matriz()
@@ -243,7 +251,8 @@ def main_SomaSubtracao(opcao):
     matriz(mB, "Matriz B")
     op = (lambda a, b: a + b) if opcao == 1 else (lambda a, b: a - b)
     resultado = sum_sub(mA, mB, op)
-    matriz(resultado, "Resultado")
+    if resultado is not None:
+        matriz(resultado, "Resultado")
 
 def main_Multiplicacao():
     mA = criar_matriz()
