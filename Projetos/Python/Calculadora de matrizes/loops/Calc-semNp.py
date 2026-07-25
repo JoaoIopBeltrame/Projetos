@@ -1,595 +1,450 @@
-import os, sys, time
+import math
+import os
+import sys
+import time
 from fractions import Fraction as Fr
+from typing import Callable, NamedTuple
 
-AZ   = "\033[34m"
-VERD = "\033[32m"
-VERM = "\033[31m"
-CI   = "\033[36m"
-AMA  = "\033[33m"
-ROSA = "\033[35m"
-NEG  = "\033[1m"
-RE   = "\033[0m"
+AZ, VERD, VERM, CI, AMA, ROSA, NEG, RE = (f"\033[{c}m" for c in (34, 32, 31, 36, 33, 35, 1, 0))
+
+def nova_matriz(linhas: int, colunas: int, valor=0) -> list:
+    """Matriz linhas x colunas com todas as células iguais a `valor`."""
+    v = Fr(valor)
+    return [[v for _ in range(colunas)] for _ in range(linhas)]
+
+def matriz_identidade(ordem: int) -> list:
+    """Identidade n x n: 1 na diagonal, 0 no resto."""
+    return [[Fr(1) if i == j else Fr(0) for j in range(ordem)] for i in range(ordem)]
 
 class Tela:
-    @staticmethod
-    def reloading(palavra, vezes=5):
-        for i in range(vezes):
-            os.system("cls" if os.name == "nt" else "clear")
-            sys.stdout.write(f"{CI}{palavra}{RE}")
-            for k in range(3):
-                sys.stdout.write(f"{AMA}.{RE}")
-                sys.stdout.flush()
-                time.sleep(0.17)
-            print()
+    """Toda entrada e saída de terminal fica aqui. Nenhuma outra classe faz print/input direto."""
 
     @staticmethod
-    def pausa_erro():
-        time.sleep(1.3)
+    def _msg(simbolo: str, cor: str, texto: str, pausa: float = 0.0) -> None:
+        print(f"{cor}{simbolo} {texto}{RE}")
+        time.sleep(pausa)
 
     @staticmethod
-    def tabela():
-        opcoes = [
-            ("1", "Somar matrizes", VERD),
-            ("2", "Subtrair matrizes", VERD),
-            ("3", "Multiplicar", ROSA),
-            ("4", "Determinante", VERM),
-            ("5", "Transposta", CI),
-            ("6", "Traço", CI),
-            ("7", "Norma", CI),
-            ("8", "Rank", AMA),
-            ("9", "Inversa", AMA),
-            ("0", "Sair", VERM),
-        ]
-        larg = 30
-        titulo = "CALCULADORA DE MATRIZES"
+    def sucesso(texto: str, pausa: float = 0.0) -> None:
+        Tela._msg("✓", VERD, texto, pausa)
+
+    @staticmethod
+    def erro(texto: str, pausa: float = 0.0) -> None:
+        Tela._msg("✗ Erro:", VERM, texto, pausa)
+
+    @staticmethod
+    def aviso(texto: str, pausa: float = 0.0) -> None:
+        Tela._msg("⚠", AMA, texto, pausa)
+
+    @staticmethod
+    def limpar() -> None:
+        os.system("cls" if os.name == "nt" else "clear")
+
+    @staticmethod
+    def carregando(palavra: str, pontos: int = 3) -> None:
+        sys.stdout.write(f"{CI}{palavra}{RE}")
+        for _ in range(pontos):
+            sys.stdout.write(f"{AMA}.{RE}")
+            sys.stdout.flush()
+            time.sleep(0.25)
         print()
-        print(f"{NEG}{AZ}╔" + "═" * (larg + 4) + f"╗{RE}")
-        print(f"{NEG}{AZ}║{RE}{NEG}{titulo:^{larg + 4}}{RE}{NEG}{AZ}║{RE}")
-        print(f"{NEG}{AZ}╠═══╦" + "═" * larg + f"╣{RE}")
-        for num, texto, cor in opcoes:
-            print(f"{NEG}{AZ}║{RE} {cor}{num}{RE} {NEG}{AZ}║{RE} {cor}{texto:<{larg - 2}}{RE} {NEG}{AZ}║{RE}")
+
+    @staticmethod
+    def titulo(texto: str, cor: str = AZ) -> None:
+        linha = "─" * (len(texto) + 4)
+        print(f"\n{NEG}{cor}┌{linha}┐\n│  {texto}  │\n└{linha}┘{RE}\n")
+
+    @staticmethod
+    def ler_inteiro(msg: str, minimo: int | None = None) -> int:
+        while True:
+            try:
+                valor = int(input(f"{AZ}{msg}{RE}\n>> "))
+            except ValueError:
+                Tela.erro("Digite um número inteiro")
+                continue
+            if minimo is not None and valor < minimo:
+                Tela.erro(f"Precisa ser ≥ {minimo}")
+                continue
+            return valor
+
+    @staticmethod
+    def ler_numero(msg: str) -> Fr:
+        """Aceita inteiro (3), fração (3/4) ou decimal (0.5) e devolve Fraction exata."""
+        while True:
+            texto = input(f"{AZ}{msg}{RE}\n>> ").strip()
+            try:
+                return Fr(texto)
+            except ZeroDivisionError:
+                Tela.erro("Denominador não pode ser 0")
+            except ValueError:
+                Tela.erro("Use inteiro (3), fração (3/4) ou decimal (0.5)")
+
+    @staticmethod
+    def escolher(pergunta: str, opcoes: list, cor: str = AMA) -> str:
+        print(f"\n{NEG}{cor}→ {pergunta}{RE}")
+        for tecla, descricao in opcoes:
+            print(f"  {AZ}[{tecla}]{RE} {descricao}")
+        validas = {tecla for tecla, _ in opcoes}
+        while True:
+            escolha = input(f"{cor}Escolha{RE}: ").strip().upper()
+            if escolha in validas:
+                return escolha
+            Tela.erro(f"Use: {' / '.join(sorted(validas))}", 1.0)
+
+    @staticmethod
+    def menu(operacoes: dict, larg: int = 30) -> None:
+        titulo = "CALCULADORA DE MATRIZES"
+        print(f"\n{NEG}{AZ}╔" + "═" * (larg + 4) + "╗")
+        print(f"║{RE}{NEG}{titulo:^{larg + 4}}{AZ}║")
+        print("╠═══╦" + "═" * larg + "╣" + RE)
+        linhas = [(t, op.rotulo, op.cor) for t, op in operacoes.items()] + [("0", "Sair", VERM)]
+        for tecla, rotulo, cor in linhas:
+            print(f"{NEG}{AZ}║{RE} {cor}{tecla}{RE} {NEG}{AZ}║{RE} {cor}{rotulo:<{larg - 2}}{RE} {NEG}{AZ}║{RE}")
         print(f"{NEG}{AZ}╚═══╩" + "═" * larg + f"╝{RE}")
 
     @staticmethod
-    def titulo(msg, cor=AZ):
-        linha = "─" * (len(msg) + 4)
-        print(f"\n{NEG}{cor}┌{linha}┐{RE}")
-        print(f"{NEG}{cor}│  {msg}  │{RE}")
-        print(f"{NEG}{cor}└{linha}┘{RE}\n")
-
-    @staticmethod
-    def sucesso(msg):
-        print(f"{VERD}✓ {msg}{RE}")
-
-    @staticmethod
-    def erro(msg):
-        print(f"{VERM}✗ Erro: {msg}{RE}")
-
-    @staticmethod
-    def aviso(msg):
-        print(f"{AMA}⚠ {msg}{RE}")
-
-    @staticmethod
-    def info(msg):
-        print(f"{CI}i {msg}{RE}")
-
-    @staticmethod
-    def regra():
+    def explicar_exponencial() -> None:
         print(f"""{NEG}{AMA}
-        Exemplo de crescimento exponencial:{RE}
-        • Digite o número inicial: {AZ}2{RE}
-        • Resultado: {AZ}2{RE} → {AZ}4{RE} → {AZ}8{RE} → {AZ}16{RE} → ...
-
-        {AMA}Digite um limite para parar a sequência{RE}
+        Crescimento exponencial:{RE}
+        • inicial {AZ}2{RE}, fator {AZ}2{RE} → {AZ}2 → 4 → 8 → 16 → ...{RE}
+        • ao passar do {AMA}limite{RE} (em módulo), a sequência para
         """)
 
 class Matriz:
+    """Criação, preenchimento e exibição de matrizes.
+    Representa matrizes como list[list[Fr]] para aritmética exata."""
+
     @staticmethod
-    def criar(quadrada=False):
+    def criar(quadrada: bool = False) -> list:
+        print(f"\n{NEG}{CI}→ Criando matriz{RE}")
+        if quadrada:
+            linhas = colunas = Tela.ler_inteiro("  Ordem (n de n×n)", minimo=1)
+        else:
+            linhas = Tela.ler_inteiro("  Linhas", minimo=1)
+            colunas = Tela.ler_inteiro("  Colunas", minimo=1)
+
+        Tela.sucesso(f"Matriz {linhas}x{colunas} criada")
+        return Matriz.preencher(nova_matriz(linhas, colunas))
+
+    @staticmethod
+    def preencher(matriz: list) -> list:
+        modo = Tela.escolher("Como preencher?", [
+            ("1", "Um número igual em toda a matriz"),
+            ("2", "Manual (digitar cada número)"),
+            ("3", "Exponencial — mesma regra na matriz toda"),
+            ("4", "Exponencial — uma regra por linha"),
+        ])
+        linhas, colunas = len(matriz), len(matriz[0])
+
+        if modo == "1":
+            numero = Tela.ler_numero("Número para toda a matriz")
+            Tela.sucesso(f"Preenchido com {numero}")
+            return nova_matriz(linhas, colunas, numero)
+
+        if modo == "2":
+            for lin in range(linhas):
+                for col in range(colunas):
+                    matriz[lin][col] = Tela.ler_numero(f"[{lin + 1},{col + 1}]")
+            Tela.sucesso("Preenchimento manual concluído")
+            return matriz
+
+        return Matriz._exponencial(matriz, por_linha=(modo == "4"))
+
+    @staticmethod
+    def _ler_regra(indent: str = "  ") -> tuple:
         while True:
-            try:
-                print(f"\n{NEG}{CI}→ Criando matriz{RE}")
-                if quadrada:
-                    n = int(input(f"{AZ}  Ordem (n de n×n){RE}: "))
-                    l = c = n
-                else:
-                    l = int(input(f"{AZ}  Linhas{RE}: "))
-                    c = int(input(f"{AZ}  Colunas{RE}: "))
-
-                if l < 1 or c < 1:
-                    Tela.erro("Dimensões devem ser ≥ 1")
-                    Tela.pausa_erro()
-                    continue
-
-            except ValueError:
-                Tela.erro("Digite apenas números inteiros")
-                Tela.pausa_erro()
+            inicial = Tela.ler_numero(f"{indent}Número inicial")
+            limite = Tela.ler_numero(f"{indent}Limite (parar em)")
+            fator = Tela.ler_numero(f"{indent}Fator de crescimento (ex: 2)")
+            if fator == 0:
+                Tela.erro("Fator de crescimento não pode ser 0", 1.3)
                 continue
-            except Exception as e:
-                Tela.erro(f"Erro inesperado: {str(e)}")
-                print("Pressione ENTER para continuar")
-                input(">>")
+            if abs(inicial) > abs(limite):
+                Tela.erro(f"Inicial {inicial} já passa do limite {limite}: a matriz sairia toda zerada", 1.3)
                 continue
-            break
-
-        m = [[Fr(0) for _ in range(c)] for _ in range(l)]
-        print(f"{VERD}Matriz {l}x{c} criada{RE}")
-        return Matriz.preencher(m, l, c)
+            if fator == 1:
+                Tela.aviso("Fator 1 não cresce: os valores ficam todos iguais")
+            return inicial, limite, fator
 
     @staticmethod
-    def preencher(m, l, c):
-        while True:
-            try:
-                print(f"\n{NEG}{AMA}→ Como preencher?{RE}")
-                print(f"  {AZ}[S]{RE} Número único")
-                print(f"  {AZ}[N]{RE} Manual ou exponencial")
-                choice = input(f"{AMA}Escolha{RE}: ").strip().upper()
-
-                if choice in ["S", "SIM", "SI", "Y", "YES"]:
-                    number_fill = int(input(f"{AZ}Número para toda matriz{RE}: "))
-                    m = [[Fr(number_fill) for _ in range(c)] for _ in range(l)]
-                    Tela.sucesso(f"Preenchido com {number_fill}")
-                    return m
-
-                elif choice in ["N", "NAO", "NO"]:
-                    return Matriz._preencher_avancado(m, l, c)
-                else:
-                    Tela.erro("Digite S ou N")
-                    Tela.pausa_erro()
-
-            except ValueError:
-                Tela.erro("Entrada inválida")
-                Tela.pausa_erro()
+    def _preencher_linha(matriz: list, lin: int, atual: Fr, limite: Fr, fator: Fr) -> Fr:
+        """Escreve uma linha e devolve o próximo valor da sequência."""
+        for col in range(len(matriz[0])):
+            if abs(atual) > abs(limite):
+                matriz[lin][col] = Fr(0)
                 continue
+            matriz[lin][col] = atual
+            atual *= fator
+        return atual
 
     @staticmethod
-    def _preencher_avancado(m, l, c):
-        while True:
-            print(f"\n{NEG}{ROSA}→ Tipo de preenchimento{RE}")
-            print(f"  {AZ}[S]{RE} Exponencial (crescimento automático)")
-            print(f"  {AZ}[N]{RE} Manual (digita cada número)")
-            ask_expo = input(f"{ROSA}Escolha{RE}: ").strip().upper()
+    def _exponencial(matriz: list, por_linha: bool) -> list:
+        Tela.explicar_exponencial()
+        linhas = len(matriz)
 
-            if ask_expo in ["S", "SIM", "SI", "Y", "YES"]:
-                return Matriz._preencher_exponencial(m)
-            elif ask_expo in ["N", "NAO", "NO"]:
-                return Matriz._preencher_manual(m, l, c)
-            else:
-                Tela.erro("Digite S ou N")
-                time.sleep(1)
+        if por_linha:
+            for lin in range(linhas):
+                print(f"\n{NEG}{CI}Linha {lin + 1}/{linhas}{RE}")
+                Matriz._preencher_linha(matriz, lin, *Matriz._ler_regra())
+        else:
+            inicial, limite, fator = Matriz._ler_regra()
+            reiniciar = Tela.escolher("Ao passar do limite", [
+                ("1", "Preencher o resto com 0"),
+                ("2", "Reiniciar a sequência a cada linha"),
+            ]) == "2"
+            atual = inicial
+            for lin in range(linhas):
+                atual = Matriz._preencher_linha(matriz, lin, inicial if reiniciar else atual, limite, fator)
 
-    @staticmethod
-    def _preencher_exponencial(m):
-        Tela.regra()
-        while True:
-            print(f"{NEG}{CI}→ Modo de crescimento{RE}")
-            print(f"  {AZ}[1]{RE} Mesmo crescimento em toda matriz")
-            print(f"  {AZ}[2]{RE} Crescimento diferente em cada linha")
-            modo = input(f"{CI}Escolha{RE}: ").strip()
-
-            if modo == "1":
-                return Matriz._expo_matriz_inteira(m)
-            elif modo == "2":
-                return Matriz._expo_linha_por_linha(m)
-            else:
-                Tela.erro("Digite 1 ou 2")
-                Tela.pausa_erro()
+        Tela.sucesso("Preenchimento exponencial concluído")
+        return Matriz._tratar_zeros(matriz)
 
     @staticmethod
-    def _expo_matriz_inteira(m):
-        print(f"\n{NEG}{AMA}→ Opção ao atingir limite{RE}")
-        print(f"  {AZ}[1]{RE} Preencher resto com 0")
-        print(f"  {AZ}[2]{RE} Reiniciar a sequência")
-        continua = input(f"{AMA}Escolha{RE}: ").strip()
+    def _tratar_zeros(matriz: list) -> list:
+        zeros = [(i, j) for i, linha in enumerate(matriz) for j, v in enumerate(linha) if v == 0]
+        if not zeros:
+            return matriz
 
-        numero_inicial = Fr(int(input(f"{AZ}Número inicial{RE}: ")))
-        numero_limite = Fr(int(input(f"{AZ}Limite (parar em){RE}: ")))
-        numero_crescimento = Fr(int(input(f"{AZ}Fator de crescimento (ex: 2){RE}: ")))
+        Matriz.exibir(matriz, "Matriz atual (zeros vieram do limite)")
+        if Tela.escolher("Alguns valores ficaram 0", [
+            ("S", "Preencher os zeros manualmente"),
+            ("N", "Deixar como 0"),
+        ]) == "N":
+            return matriz
 
-        if continua == "1":
-            for lin in range(len(m)):
-                for col in range(len(m[0])):
-                    if numero_inicial <= numero_limite:
-                        m[lin][col] = numero_inicial
-                        numero_inicial *= numero_crescimento
-                    else:
-                        m[lin][col] = Fr(0)
-            Tela.sucesso("Matriz preenchida (resto = 0)")
-        elif continua == "2":
-            numero_inicial_holder = numero_inicial
-            for lin in range(len(m)):
-                numero_inicial = numero_inicial_holder
-                for col in range(len(m[0])):
-                    if numero_inicial <= numero_limite:
-                        m[lin][col] = numero_inicial
-                        numero_inicial *= numero_crescimento
-                    else:
-                        m[lin][col] = Fr(0)
-            Tela.sucesso("Matriz preenchida (reiniciado)")
-
-        return Matriz._tratar_zeros(m)
-
-    @staticmethod
-    def _expo_linha_por_linha(m):
-        for lin in range(len(m)):
-            print(f"\n{NEG}{CI}Linha {lin + 1}/{len(m)}{RE}")
-            numero_inicial = Fr(int(input(f"{AZ}  Número inicial{RE}: ")))
-            numero_limite = Fr(int(input(f"{AZ}  Limite{RE}: ")))
-            numero_crescimento = Fr(int(input(f"{AZ}  Crescimento{RE}: ")))
-
-            for col in range(len(m[0])):
-                if numero_inicial <= numero_limite:
-                    m[lin][col] = numero_inicial
-                    numero_inicial *= numero_crescimento
-                else:
-                    m[lin][col] = Fr(0)
-        Tela.sucesso("Preenchimento linha por linha concluído")
-        return Matriz._tratar_zeros(m)
-
-    @staticmethod
-    def _preencher_manual(m, l, c):
-        for lin in range(l):
-            for col in range(c):
-                while True:
-                    try:
-                        valor = Fr(int(input(f"{AZ}[{lin + 1},{col + 1}]{RE}: ")))
-                        m[lin][col] = valor
-                        break
-                    except ValueError:
-                        Tela.erro("Digite um número inteiro")
-        Tela.sucesso("Preenchimento manual concluído")
-        return m
-
-    @staticmethod
-    def _tratar_zeros(m):
-        tem_zero = any(v == 0 for linha in m for v in linha)
-        if not tem_zero:
-            return m
-
-        Matriz.exibir(m, "Matriz atual (zeros vieram do limite)")
-        print(f"\n{NEG}{AMA}→ Alguns valores ficaram 0{RE}")
-        print(f"  {AZ}[S]{RE} Preencher os zeros manualmente")
-        print(f"  {AZ}[N]{RE} Deixar como 0")
-
-        while True:
-            escolha = input(f"{AMA}Escolha{RE}: ").strip().upper()
-            if escolha in ["N", "NAO", "NO"]:
-                return m
-            if escolha in ["S", "SIM", "SI", "Y", "YES"]:
-                break
-            Tela.erro("Digite S ou N")
-
-        for i, linha in enumerate(m):          # i = indice da LINHA
-            for j, valor in enumerate(linha):  # j = indice da COLUNA
-                if valor == 0:
-                    while True:
-                        try:
-                            m[i][j] = Fr(int(input(f"{AZ}[{i + 1},{j + 1}] (era 0){RE}: ")))
-                            break
-                        except ValueError:
-                            Tela.erro("Digite um número inteiro")
+        for lin, col in zeros:
+            matriz[lin][col] = Tela.ler_numero(f"[{lin + 1},{col + 1}] (era 0)")
         Tela.sucesso("Zeros preenchidos")
-        return m
+        return matriz
 
     @staticmethod
-    def exibir(mat, titulo=None):
-        if not mat or len(mat) == 0 or len(mat[0]) == 0:
+    def exibir(matriz: list, titulo: str | None = None) -> None:
+        if not matriz or len(matriz[0]) == 0:
             return
 
         if titulo:
             print(f"\n{NEG}{ROSA}{titulo}{RE}")
 
-        textos = [[str(v) for v in linha] for linha in mat]
-        cols = len(mat[0])
-        cel = max(len(v) for linha in textos for v in linha) + 2
-        if cel < 3:
-            cel = 3
-        rot = len(str(len(mat) - 1))
-        margem = " " * (rot + 1)
+        textos = [[str(valor) for valor in linha] for linha in matriz]
+        linhas, colunas = len(matriz), len(matriz[0])
+        largura = max((max(len(v) for linha in textos for v in linha) + 2), 3)
+        margem = " " * (len(str(linhas)) + 1)
+        borda = "─" * (colunas * largura)
 
-        print(f"{CI}{margem} " + "".join(f"{c:^{cel}}" for c in range(cols)) + f"{RE}")
-        print(f"{AZ}{margem}┌" + "─" * (cols * cel) + f"┐{RE}")
-        for i, linha in enumerate(textos):
-            celulas = "".join(f"{v:^{cel}}" for v in linha)
-            print(f"{CI}{i:>{rot}} {AZ}│{VERD}{celulas}{AZ}│{RE}")
-        print(f"{AZ}{margem}└" + "─" * (cols * cel) + f"┘{RE}")
+        print(f"{CI}{margem} " + "".join(f"{c:^{largura}}" for c in range(1, colunas + 1)) + RE)
+        print(f"{AZ}{margem}┌{borda}┐{RE}")
+        for i, linha in enumerate(textos, start=1):
+            celulas = "".join(f"{v:^{largura}}" for v in linha)
+            print(f"{CI}{i:>{len(margem) - 1}} {AZ}│{VERD}{celulas}{AZ}│{RE}")
+        print(f"{AZ}{margem}└{borda}┘{RE}")
 
-class Operacoes:
+class OperacoesMat:
+    """Matemática pura. Recebe matrizes e devolve resultado ou None
+    (já tendo avisado o erro via Tela)."""
+
     @staticmethod
-    def soma_subtracao(matrizA, matrizB, operador):
-        if len(matrizA) == len(matrizB) and len(matrizA[0]) == len(matrizB[0]):
-            return [
-                [operador(matrizA[lin][col], matrizB[lin][col]) for col in range(len(matrizA[0]))]
-                for lin in range(len(matrizA))
-            ]
-        else:
-            Tela.erro(f"Dimensões incompatíveis: A({len(matrizA)}x{len(matrizA[0])}) ≠ B({len(matrizB)}x{len(matrizB[0])})")
-            Tela.aviso("Matrizes precisam ter EXATAMENTE o mesmo tamanho para soma/subtração")
+    def _mesma_forma(A: list, B: list) -> bool:
+        if len(A) == len(B) and len(A[0]) == len(B[0]):
+            return True
+        Tela.erro(f"Dimensões incompatíveis: {len(A)}x{len(A[0])} ≠ {len(B)}x{len(B[0])}")
+        Tela.aviso("Soma/subtração exige matrizes EXATAMENTE do mesmo tamanho")
+        return False
+
+    @staticmethod
+    def _e_quadrada(matriz: list, nome: str) -> bool:
+        if len(matriz) == 0 or len(matriz[0]) == 0:
+            Tela.erro(f"Matriz vazia não tem {nome}")
+            return False
+        if len(matriz) != len(matriz[0]):
+            Tela.erro(f"Matriz {len(matriz)}x{len(matriz[0])} não é quadrada")
+            Tela.aviso(f"{nome.capitalize()} só existe para matriz quadrada (n×n)")
+            return False
+        return True
+
+    @staticmethod
+    def _escalonar(matriz: list) -> tuple:
+        """Elimina abaixo dos pivôs. Devolve (matriz escalonada, sinal das trocas, rank)."""
+        M = [linha[:] for linha in matriz]
+        linhas, colunas = len(M), len(M[0])
+        sinal, pivo = 1, 0
+
+        for col in range(colunas):
+            if pivo >= linhas:
+                break
+            alvo = next((lin for lin in range(pivo, linhas) if M[lin][col] != 0), None)
+            if alvo is None:
+                continue
+            if alvo != pivo:
+                M[pivo], M[alvo] = M[alvo], M[pivo]
+                sinal *= -1
+            for lin in range(pivo + 1, linhas):
+                if M[lin][col] != 0:
+                    fator = M[lin][col] / M[pivo][col]
+                    for k in range(col, colunas):
+                        M[lin][k] -= fator * M[pivo][k]
+            pivo += 1
+
+        return M, sinal, pivo
+
+    @staticmethod
+    def soma(A: list, B: list) -> list | None:
+        return [[A[lin][col] + B[lin][col] for col in range(len(A[0]))]
+                for lin in range(len(A))] if OperacoesMat._mesma_forma(A, B) else None
+
+    @staticmethod
+    def subtracao(A: list, B: list) -> list | None:
+        return [[A[lin][col] - B[lin][col] for col in range(len(A[0]))]
+                for lin in range(len(A))] if OperacoesMat._mesma_forma(A, B) else None
+
+    @staticmethod
+    def multiplicacao(A: list, B: list) -> list | None:
+        if len(A[0]) != len(B):
+            Tela.erro(f"Multiplicação impossível: colunas de A({len(A[0])}) ≠ linhas de B({len(B)})")
             return None
+        return [
+            [sum((A[l][k] * B[k][c] for k in range(len(B))), Fr(0)) for c in range(len(B[0]))]
+            for l in range(len(A))
+        ]
 
     @staticmethod
-    def multiplicacao(matrizA, matrizB):
-        if len(matrizA[0]) == len(matrizB):
-            return [
-                [sum(matrizA[l][k] * matrizB[k][c] for k in range(len(matrizB))) for c in range(len(matrizB[0]))]
-                for l in range(len(matrizA))
-            ]
-        else:
-            Tela.erro(f"Multiplicação impossível: colunas A({len(matrizA[0])}) ≠ linhas B({len(matrizB)})")
-            Tela.aviso("Colunas de A devem ser iguais às linhas de B")
+    def transposta(matriz: list) -> list:
+        return [list(col) for col in zip(*matriz)]
+
+    @staticmethod
+    def traco(matriz: list) -> Fr | None:
+        if not OperacoesMat._e_quadrada(matriz, "traço"):
             return None
+        return sum((matriz[i][i] for i in range(len(matriz))), Fr(0))
 
     @staticmethod
-    def determinante(m):
-        if len(m) == 0 or len(m[0]) == 0:
-            Tela.erro("Matriz vazia não pode ter determinante")
-            return None
-
-        if len(m) != len(m[0]):
-            Tela.erro(f"Matriz não é quadrada: {len(m)}x{len(m[0])}")
-            Tela.aviso("Determinante só existe para matrizes quadradas (nxn)")
-            return None
-
-        t = len(m)
-        sinal = 1
-
-        for i in range(t):
-            if m[i][i] == 0:
-                for k in range(i + 1, t):
-                    if m[k][i] != 0:
-                        m[i], m[k] = m[k], m[i]
-                        sinal *= -1
-                        break
-                else:
-                    return Fr(0)
-
-            for j in range(i + 1, t):
-                fator = m[j][i] / m[i][i]
-                for k in range(i, t):
-                    m[j][k] -= fator * m[i][k]
-
-        resultado = sinal
-        for i in range(t):
-            resultado *= m[i][i]
-        return resultado
-
-    @staticmethod
-    def transposta(m):
-        return [list(col) for col in zip(*m)]
-
-    @staticmethod
-    def traco(m):
-        if len(m) != len(m[0]):
-            Tela.erro(f"Matriz não é quadrada: {len(m)}x{len(m[0])}")
-            Tela.aviso("Traço só existe para matrizes quadradas (nxn)")
-            return None
-        return sum(m[i][i] for i in range(len(m)))
-
-    @staticmethod
-    def norma(m):
+    def norma(matriz: list) -> Fr:
+        """Norma 1: maior soma de módulos entre as colunas."""
         return max(
-            sum(abs(m[l][j]) for l in range(len(m)))
-            for j in range(len(m[0]))
+            sum((abs(matriz[l][j]) for l in range(len(matriz))), Fr(0))
+            for j in range(len(matriz[0]))
         )
 
     @staticmethod
-    def rank(m):
-        m = [linha[:] for linha in m]
-        linhas = len(m)
-        colunas = len(m[0])
-        rank_count = 0
-
-        for col in range(min(linhas, colunas)):
-            encontrou = False
-            for lin in range(rank_count, linhas):
-                if m[lin][col] != 0:
-                    m[rank_count], m[lin] = m[lin], m[rank_count]
-                    encontrou = True
-                    break
-
-            if not encontrou:
-                continue
-
-            for lin in range(rank_count + 1, linhas):
-                if m[rank_count][col] != 0:
-                    fator = m[lin][col] / m[rank_count][col]
-                    for c in range(colunas):
-                        m[lin][c] -= fator * m[rank_count][c]
-
-            rank_count += 1
-
-        return rank_count
+    def rank(matriz: list) -> int:
+        return OperacoesMat._escalonar(matriz)[2]
 
     @staticmethod
-    def inversa(m):
-        if len(m) == 0 or len(m[0]) == 0:
-            Tela.erro("Matriz vazia não pode ter inversa")
+    def determinante(matriz: list) -> Fr | None:
+        if not OperacoesMat._e_quadrada(matriz, "determinante"):
+            return None
+        escalonada, sinal, rank = OperacoesMat._escalonar(matriz)
+        ordem = len(matriz)
+        if rank < ordem:
+            return Fr(0)
+        return sinal * math.prod(escalonada[i][i] for i in range(ordem))
+
+    @staticmethod
+    def inversa(matriz: list) -> list | None:
+        if not OperacoesMat._e_quadrada(matriz, "inversa"):
             return None
 
-        if len(m) != len(m[0]):
-            Tela.erro(f"Matriz não é quadrada: {len(m)}x{len(m[0])}")
-            Tela.aviso("Inversa só existe para matrizes quadradas (nxn)")
-            return None
+        ordem = len(matriz)
+        identidade = matriz_identidade(ordem)
+        aumentada = [matriz[i][:] + identidade[i] for i in range(ordem)]
 
-        n = len(m)
-        aug = [linha[:] + [Fr(1) if i == j else Fr(0) for j in range(n)]
-               for i, linha in enumerate(m)]
-
-        for i in range(n):
-            if aug[i][i] == 0:
-                for j in range(i + 1, n):
-                    if aug[j][i] != 0:
-                        aug[i], aug[j] = aug[j], aug[i]
+        for i in range(ordem):
+            if aumentada[i][i] == 0:
+                for j in range(i + 1, ordem):
+                    if aumentada[j][i] != 0:
+                        aumentada[i], aumentada[j] = aumentada[j], aumentada[i]
                         break
                 else:
                     Tela.erro("Matriz é singular, não tem inversa")
                     Tela.aviso("Determinante é zero")
                     return None
 
-            divisor = aug[i][i]
-            for c in range(2 * n):
-                aug[i][c] /= divisor
+            divisor = aumentada[i][i]
+            for c in range(2 * ordem):
+                aumentada[i][c] /= divisor
 
-            for k in range(n):
+            for k in range(ordem):
                 if k == i:
                     continue
-                fator = aug[k][i]
+                fator = aumentada[k][i]
                 if fator != 0:
-                    for l in range(2 * n):
-                        aug[k][l] -= fator * aug[i][l]
+                    for l in range(2 * ordem):
+                        aumentada[k][l] -= fator * aumentada[i][l]
 
-        return [linha[n:] for linha in aug]
+        return [linha[ordem:] for linha in aumentada]
+
+class Operacao(NamedTuple):
+    """Uma linha do menu: rótulo, cor, função e o que ela exige/devolve."""
+    rotulo: str
+    cor: str
+    funcao: Callable
+    matrizes: int = 1
+    quadrada: bool = False
+    escalar: bool = False
+    aviso_singular: bool = False
+
+OPERACOES = {
+    "1": Operacao("Somar matrizes", VERD, OperacoesMat.soma, matrizes=2),
+    "2": Operacao("Subtrair matrizes", VERD, OperacoesMat.subtracao, matrizes=2),
+    "3": Operacao("Multiplicar", ROSA, OperacoesMat.multiplicacao, matrizes=2),
+    "4": Operacao("Determinante", VERM, OperacoesMat.determinante, quadrada=True, escalar=True, aviso_singular=True),
+    "5": Operacao("Transposta", CI, OperacoesMat.transposta),
+    "6": Operacao("Traço", CI, OperacoesMat.traco, quadrada=True, escalar=True),
+    "7": Operacao("Norma", CI, OperacoesMat.norma, escalar=True),
+    "8": Operacao("Rank", AMA, OperacoesMat.rank, escalar=True),
+    "9": Operacao("Inversa", AMA, OperacoesMat.inversa, quadrada=True),
+}
 
 class Main:
-    def __init__(self):
-        self.ativo = True
+    """Loop principal: mostra o menu, lê a opção, despacha e volta pro menu."""
 
-    def executar(self):
-        while self.ativo:
-            Main._exibir_menu()
-            self._processar_opcao()
+    def executar(self) -> None:
+        while True:
+            Tela.limpar()
+            Tela.menu(OPERACOES)
+            try:
+                escolha = input(f"{AMA}Escolha uma opção{RE}\n>> ").strip()
+                if escolha == "0":
+                    Tela.sucesso("Até logo!")
+                    Tela.carregando("Saindo")
+                    return
+                if escolha not in OPERACOES:
+                    Tela.erro("Opção inválida", 1.0)
+                    continue
+                Main._rodar(OPERACOES[escolha])
+                input(f"\n{CI}Pressione ENTER para voltar ao menu\n>> {RE}")
+            except KeyboardInterrupt:
+                Tela.aviso("\nOperação cancelada", 1.0)
+            except EOFError:
+                Tela.aviso("\nEntrada encerrada", 1.0)
+                return
 
     @staticmethod
-    def _exibir_menu():
-        os.system("cls" if os.name == "nt" else "clear")
-        Tela.tabela()
+    def _rodar(op: Operacao) -> None:
+        Tela.titulo(op.rotulo.upper(), op.cor)
 
-    def _processar_opcao(self):
-        try:
-            opcao = int(input(f"{AMA}Escolha uma opção{RE}: "))
-        except ValueError:
-            Tela.erro("Digite um número")
-            time.sleep(1)
+        matrizes: list = []
+        for i in range(op.matrizes):
+            nome = f"Matriz {'AB'[i]}" if op.matrizes > 1 else "Matriz"
+            matriz = Matriz.criar(op.quadrada)
+            Matriz.exibir(matriz, nome)
+            matrizes.append(matriz)
+
+        resultado = op.funcao(*matrizes)
+        if resultado is None:
             return
+        if op.escalar:
+            Tela.sucesso(f"{op.rotulo} = {resultado}")
+            if op.aviso_singular and resultado == 0:
+                Tela.aviso("Determinante 0 → matriz singular (não tem inversa)")
+        else:
+            Matriz.exibir(resultado, f"Resultado — {op.rotulo}")
 
-        match opcao:
-            case 1:
-                Main._soma_subtracao("Soma", lambda a, b: a + b)
-            case 2:
-                Main._soma_subtracao("Subtração", lambda a, b: a - b)
-            case 3:
-                Main._multiplicacao()
-            case 4:
-                Main._determinante()
-            case 5:
-                Main._transposta()
-            case 6:
-                Main._traco()
-            case 7:
-                Main._norma()
-            case 8:
-                Main._rank()
-            case 9:
-                Main._inversa()
-            case 0:
-                self._sair()
-            case _:
-                Tela.erro("Opção inválida")
-                time.sleep(1)
-
-        if self.ativo:
-            input(f"\n{CI}Pressione ENTER para voltar ao menu\n>>{RE}")
-
-    @staticmethod
-    def _soma_subtracao(operacao, operador):
-        Tela.titulo(f"{operacao.upper()} DE MATRIZES", VERD)
-
-        mA = Matriz.criar()
-        Matriz.exibir(mA, "Matriz A")
-
-        mB = Matriz.criar()
-        Matriz.exibir(mB, "Matriz B")
-
-        resultado = Operacoes.soma_subtracao(mA, mB, operador)
-
-        if resultado is not None:
-            Matriz.exibir(resultado, f"Resultado ({operacao})")
-
-    @staticmethod
-    def _multiplicacao():
-        Tela.titulo("MULTIPLICAÇÃO DE MATRIZES", ROSA)
-
-        mA = Matriz.criar()
-        Matriz.exibir(mA, "Matriz A")
-
-        mB = Matriz.criar()
-        Matriz.exibir(mB, "Matriz B")
-
-        resultado = Operacoes.multiplicacao(mA, mB)
-        if resultado is not None:
-            Matriz.exibir(resultado, "Resultado (A x B)")
-
-    @staticmethod
-    def _determinante():
-        Tela.titulo("DETERMINANTE", VERM)
-
-        mD = Matriz.criar(quadrada=True)
-        Matriz.exibir(mD, "Matriz")
-
-        det = Operacoes.determinante(mD)
-        if det is not None:
-            if det == 0:
-                Tela.aviso(f"Determinante = {det} (matriz singular/degenerada)")
-            else:
-                Tela.sucesso(f"Determinante = {det}")
-
-    @staticmethod
-    def _transposta():
-        Tela.titulo("TRANSPOSTA", CI)
-
-        mT = Matriz.criar()
-        Matriz.exibir(mT, "Matriz original")
-
-        resultado = Operacoes.transposta(mT)
-        Matriz.exibir(resultado, "Transposta")
-
-    @staticmethod
-    def _traco():
-        Tela.titulo("TRAÇO", CI)
-
-        mT = Matriz.criar(quadrada=True)
-        Matriz.exibir(mT, "Matriz")
-
-        resultado = Operacoes.traco(mT)
-        if resultado is not None:
-            Tela.sucesso(f"Traço = {resultado}")
-
-    @staticmethod
-    def _norma():
-        Tela.titulo("NORMA", CI)
-
-        mN = Matriz.criar()
-        Matriz.exibir(mN, "Matriz")
-
-        resultado = Operacoes.norma(mN)
-        Tela.sucesso(f"Norma = {resultado}")
-
-    @staticmethod
-    def _rank():
-        Tela.titulo("RANK", AMA)
-
-        mR = Matriz.criar()
-        Matriz.exibir(mR, "Matriz")
-
-        resultado = Operacoes.rank(mR)
-        Tela.sucesso(f"Rank = {resultado}")
-
-    @staticmethod
-    def _inversa():
-        Tela.titulo("INVERSA", AMA)
-
-        mI = Matriz.criar(quadrada=True)
-        Matriz.exibir(mI, "Matriz")
-
-        resultado = Operacoes.inversa(mI)
-        if resultado is not None:
-            Matriz.exibir(resultado, "Inversa")
-
-    def _sair(self):
-        Tela.sucesso("Até logo!")
-        Tela.reloading("Saindo")
-        self.ativo = False
-
-if __name__ == '__main__':
-    main = Main()
-    main.executar()
+if __name__ == "__main__":
+    try:
+        Main().executar()
+    except (KeyboardInterrupt, EOFError):
+        print(f"\n{VERM}Encerrado pelo usuário{RE}")
+    try:
+        Main().executar()
+    except (KeyboardInterrupt, EOFError):
+        print(f"\n{VERM}Encerrado pelo usuário{RE}")
