@@ -420,7 +420,3 @@ if __name__ == "__main__":
         Main().executar()
     except (KeyboardInterrupt, EOFError):
         print(f"\n{VERM}Encerrado pelo usuário{RE}")
-    try:
-        Main().executar()
-    except (KeyboardInterrupt, EOFError):
-        print(f"\n{VERM}Encerrado pelo usuário{RE}")
